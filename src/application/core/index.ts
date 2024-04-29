@@ -4,26 +4,40 @@ import Emitter from "../emitter";
 import Loader from "../loader";
 import Control from "../control";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-
+import { PointerLockControls } from "three-stdlib";
 export default class Core {
 	scene: Scene;
 	renderer: WebGLRenderer;
 	camera: PerspectiveCamera;
 	clock: Clock;
-	orbit_controls: OrbitControls;
+	controls: OrbitControls | PointerLockControls;
 
 	emitter: Emitter;
 	control: Control;
 	loader: Loader;
 	world: World;
+	mode: string;
 
 	constructor() {
 		this.scene = new Scene();
 		this.renderer = new WebGLRenderer({antialias: true});
 		this.camera = new PerspectiveCamera();
 		this.clock = new Clock();
-		this.orbit_controls = new OrbitControls(this.camera, this.renderer.domElement);
-		this.orbit_controls.enablePan = false;
+		// this.mode = "PointerLockControls";
+		this.mode = "OrbitControls";
+		
+		if(this.mode =="OrbitControls") {
+			console.log(this.mode);
+			this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+			this.controls.enablePan = false;
+		}
+		else {
+			this.controls = new PointerLockControls(this.camera, this.renderer.domElement);
+		}
+		
+		
+		
+		
 
 		this._initScene();
 		this._initCamera();
@@ -39,14 +53,14 @@ export default class Core {
 		this.loader = new Loader({
 			emitter: this.emitter
 		});
-
 		this.world = new World({
 			scene: this.scene,
 			camera: this.camera,
-			orbit_controls: this.orbit_controls,
+			controls: this.controls,
 			control: this.control,
 			loader: this.loader,
-			emitter: this.emitter
+			emitter: this.emitter,
+			mode: this.mode,
 		});
 	}
 
@@ -55,7 +69,9 @@ export default class Core {
 			this.renderer.render(this.scene, this.camera);
 			const delta_time = Math.min(0.05, this.clock.getDelta());
 			this.world.update(delta_time);
-			this.orbit_controls.update();
+			if (this.controls instanceof OrbitControls) {
+				this.controls.update();
+			}
 		});
 	}
 

@@ -36,3 +36,7 @@ export const NES_GAME_SRC4 = new URL("../assets/nes/Mitsume ga Tooru (Japan).nes
 * Audio  Resources
 * */
 export const AUDIO_URL = new URL("../assets/audio/Midnight City.m4a", import.meta.url).href;
+
+
+//mode == Plaza
+export const PLAZA_COLLISION_SCENE_URL = new URL("../assets/test/KBCL.glb", import.meta.url).href;

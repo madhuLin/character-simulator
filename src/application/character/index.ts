@@ -5,6 +5,7 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import Control from "../control";
 import Emitter from "../emitter";
 import Loader from "../loader";
+import { PointerLockControls } from "three-stdlib";
 
 // 角色相关可选配置项
 type OptionalParams = Partial<{
@@ -19,7 +20,7 @@ type OptionalParams = Partial<{
 type PlayerParams = {
 	scene: Scene,
 	camera: PerspectiveCamera,
-	orbit_controls: OrbitControls,
+	controls: OrbitControls | PointerLockControls,
 	control: Control,
 	loader: Loader,
 	emitter: Emitter
@@ -40,7 +41,7 @@ const default_params: OptionalParams = {
 export default class Character {
 	private scene: Scene;
 	private camera: PerspectiveCamera;
-	private orbit_controls: OrbitControls;
+	private controls: OrbitControls;
 	private control: Control;
 	private loader: Loader;
 	private emitter: Emitter;
@@ -88,9 +89,10 @@ export default class Character {
 			...default_params,
 			...params
 		};
+		console.log("Character");
 		this.scene = params.scene;
 		this.camera = params.camera;
-		this.orbit_controls = params.orbit_controls;
+		this.controls = params.controls as OrbitControls;
 		this.control = params.control;
 		this.emitter = params.emitter;
 		this.loader = params.loader;
@@ -120,8 +122,8 @@ export default class Character {
 
 		this._updateCharacterShape();
 
-		this.camera.position.sub(this.orbit_controls.target);
-		this.orbit_controls.target.copy(this.character.position);
+		this.camera.position.sub(this.controls.target);
+		this.controls.target.copy(this.character.position);
 		this.camera.position.add(this.character.position);
 
 		this._checkCameraCollision([scene_collider]);
@@ -203,13 +205,13 @@ export default class Character {
 
 	private _updateControls() {
 		if (this.is_first_person) {
-			this.orbit_controls.maxPolarAngle = Math.PI;
-			this.orbit_controls.minDistance = 1e-4;
-			this.orbit_controls.maxDistance = 1e-4;
+			this.controls.maxPolarAngle = Math.PI;
+			this.controls.minDistance = 1e-4;
+			this.controls.maxDistance = 1e-4;
 		} else {
-			// this.orbit_controls.maxPolarAngle = Math.PI / 2;
-			this.orbit_controls.minDistance = 2;
-			this.orbit_controls.maxDistance = 5;
+			// this.controls.maxPolarAngle = Math.PI / 2;
+			this.controls.minDistance = 2;
+			this.controls.maxDistance = 5;
 		}
 	}
 
@@ -229,7 +231,7 @@ export default class Character {
 		this.updateAction(delta_time);
 
 		// 控制移动
-		const angle = this.orbit_controls.getAzimuthalAngle();
+		const angle = this.controls.getAzimuthalAngle();
 		if (this.control.key_status["KeyW"]) {
 			this.temp_vector.set(0, 0, -1).applyAxisAngle(this.up_vector, angle);
 			this.character.position.addScaledVector(this.temp_vector, this.speed * delta_time);
@@ -406,9 +408,9 @@ export default class Character {
 				const new_position = new Vector3().addVectors(intersects[0].point, offset); // 计算新的相机位置
 				this.camera.position.copy(new_position);
 
-				this.orbit_controls.minDistance = 0;
+				this.controls.minDistance = 0;
 			} else {
-				this.orbit_controls.minDistance = 2;
+				this.controls.minDistance = 2;
 			}
 		}
 	}
@@ -425,10 +427,10 @@ export default class Character {
 	reset() {
 		this.velocity.set(0, 0, 0);
 		this.character.position.copy(this.reset_position);
-		this.camera.position.sub(this.orbit_controls.target);
-		this.orbit_controls.target.copy(this.character.position);
+		this.camera.position.sub(this.controls.target);
+		this.controls.target.copy(this.character.position);
 		this.camera.position.add(this.character.position);
-		this.orbit_controls.update();
+		this.controls.update();
 	}
 
 	/*
@@ -438,7 +440,7 @@ export default class Character {
 		this.is_first_person = !this.is_first_person;
 		if (!this.is_first_person) {
 			this.character.visible = true;
-			this.camera.position.sub(this.orbit_controls.target).normalize().multiplyScalar(5).add(this.orbit_controls.target);
+			this.camera.position.sub(this.controls.target).normalize().multiplyScalar(5).add(this.controls.target);
 		} else {
 			this.character.visible = false;
 		}

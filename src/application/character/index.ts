@@ -1,7 +1,7 @@
-import {Scene, PerspectiveCamera, AnimationAction, AnimationMixer, Box3, Line3, Matrix4, Mesh, Group, Object3D, Quaternion, Raycaster, Vector3, BoxGeometry, MeshBasicMaterial} from "three";
-import {CHARACTER_IDLE_ACTION_URL, CHARACTER_JUMP_ACTION_URL, CHARACTER_URL, CHARACTER_WALK_ACTION_URL, ON_KEY_DOWN} from "@/application/Constants";
-import {isBVHGeometry, isMesh} from "../utils/typeAssert";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import { Scene, PerspectiveCamera, AnimationAction, AnimationMixer, Box3, Line3, Matrix4, Mesh, Group, Object3D, Quaternion, Raycaster, Vector3, BoxGeometry, MeshBasicMaterial } from "three";
+import { CHARACTER_IDLE_ACTION_URL, CHARACTER_JUMP_ACTION_URL, CHARACTER_URL, CHARACTER_WALK_ACTION_URL, ON_KEY_DOWN } from "@/application/Constants";
+import { isBVHGeometry, isMesh } from "../utils/typeAssert";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Control from "../control";
 import Emitter from "../emitter";
 import Loader from "../loader";
@@ -32,7 +32,7 @@ type Actions = "idle" | "walk" | "jump";
 const default_params: OptionalParams = {
 	is_first_person: false,
 	// reset_position: new Vector3(-10, 2.5, 10),
-	reset_position: new Vector3(0, 20, 0),
+	reset_position: new Vector3(0, 10, 0),
 
 	reset_y: -25,
 	speed: 3,
@@ -113,15 +113,15 @@ export default class Character {
 		this.emitter.$on(ON_KEY_DOWN, this._onKeyDown.bind(this));
 	}
 
-	update(delta_time: number, scene_collider: Mesh | null) {
+	update(delta_time: number, scene_colliders: Mesh[] | null) {
 		// console.log("scene_collider",scene_collider);
-		if (!scene_collider || !this.character) return;
+		if (!scene_colliders || !this.character) return;
 
 		this._updateControls();
 
 		this._updateCharacter(delta_time);
 
-		this._checkCollision(delta_time, scene_collider);
+		this._checkCollision(delta_time, scene_colliders);
 
 		this._updateCharacterShape();
 
@@ -129,7 +129,7 @@ export default class Character {
 		this.controls.target.copy(this.character.position);
 		this.camera.position.add(this.character.position);
 
-		this._checkCameraCollision([scene_collider]);
+		this._checkCameraCollision(scene_colliders);
 
 		this._checkReset();
 	}
@@ -331,76 +331,79 @@ export default class Character {
 	/*
 	* 计算角色与场景的碰撞
 	* */
-	private _checkCollision(delta_time: number, scene_collider: Mesh) {
+	private _checkCollision(delta_time: number, scene_colliders: Mesh[]) {
+
 		// 根据碰撞来调整player位置
 		const capsule_info = this.capsule_info;
-		this.temp_box.makeEmpty();
-		this.temp_mat.copy(scene_collider.matrixWorld).invert();
-		this.temp_segment.copy(capsule_info.segment);
+		for (const scene_collider of scene_colliders) {
+			this.temp_box.makeEmpty();
+			this.temp_mat.copy(scene_collider.matrixWorld).invert();
+			this.temp_segment.copy(capsule_info.segment);
 
-		// 获取胶囊体在对撞机局部空间中的位置
-		this.temp_segment.start.applyMatrix4(this.character.matrixWorld).applyMatrix4(this.temp_mat);
-		this.temp_segment.end.applyMatrix4(this.character.matrixWorld).applyMatrix4(this.temp_mat);
+			// 获取胶囊体在对撞机局部空间中的位置
+			this.temp_segment.start.applyMatrix4(this.character.matrixWorld).applyMatrix4(this.temp_mat);
+			this.temp_segment.end.applyMatrix4(this.character.matrixWorld).applyMatrix4(this.temp_mat);
 
-		// 获取胶囊体的轴对齐边界框
-		this.temp_box.expandByPoint(this.temp_segment.start);
-		this.temp_box.expandByPoint(this.temp_segment.end);
+			// 获取胶囊体的轴对齐边界框
+			this.temp_box.expandByPoint(this.temp_segment.start);
+			this.temp_box.expandByPoint(this.temp_segment.end);
 
-		this.temp_box.min.addScalar(-capsule_info.radius);
-		this.temp_box.max.addScalar(capsule_info.radius);
+			this.temp_box.min.addScalar(-capsule_info.radius);
+			this.temp_box.max.addScalar(capsule_info.radius);
 
-		if (isBVHGeometry(scene_collider.geometry)) {
-			scene_collider.geometry.boundsTree.shapecast({
-				intersectsBounds: box => box.intersectsBox(this.temp_box),
-				intersectsTriangle: tri => {
-					// 检查场景是否与胶囊相交，并调整
-					const tri_point = this.temp_vector;
-					const capsule_point = this.temp_vector2;
+			if (isBVHGeometry(scene_collider.geometry)) {
+				scene_collider.geometry.boundsTree.shapecast({
+					intersectsBounds: box => box.intersectsBox(this.temp_box),
+					intersectsTriangle: tri => {
+						// 检查场景是否与胶囊相交，并调整
+						const tri_point = this.temp_vector;
+						const capsule_point = this.temp_vector2;
 
-					const distance = tri.closestPointToSegment(this.temp_segment, tri_point, capsule_point);
-					if (distance < capsule_info.radius) {
-						const depth = capsule_info.radius - distance;
-						const direction = capsule_point.sub(tri_point).normalize();
+						const distance = tri.closestPointToSegment(this.temp_segment, tri_point, capsule_point);
+						if (distance < capsule_info.radius) {
+							const depth = capsule_info.radius - distance;
+							const direction = capsule_point.sub(tri_point).normalize();
 
-						this.temp_segment.start.addScaledVector(direction, depth);
-						this.temp_segment.end.addScaledVector(direction, depth);
+							this.temp_segment.start.addScaledVector(direction, depth);
+							this.temp_segment.end.addScaledVector(direction, depth);
+						}
 					}
-				}
-			});
-		}
+				});
+			}
 
-		// console.log("this.player_is_on_ground",this.player_is_on_ground);
+			// console.log("this.player_is_on_ground",this.player_is_on_ground);
 
-		// 检查后得到胶囊体对撞机的调整位置
-		// 场景碰撞并移动它. capsule_info.segment.start被假定为玩家模型的原点。
-		const new_position = this.temp_vector;
-		new_position.copy(this.temp_segment.start).applyMatrix4(scene_collider.matrixWorld);
+			// 检查后得到胶囊体对撞机的调整位置
+			// 场景碰撞并移动它. capsule_info.segment.start被假定为玩家模型的原点。
+			const new_position = this.temp_vector;
+			new_position.copy(this.temp_segment.start).applyMatrix4(scene_collider.matrixWorld);
 
-		// 检查对撞机移动了多少
-		const delta_vector = this.temp_vector2;
-		delta_vector.subVectors(new_position, this.character.position);
+			// 检查对撞机移动了多少
+			const delta_vector = this.temp_vector2;
+			delta_vector.subVectors(new_position, this.character.position);
 
-		// 如果player主要是垂直调整，我们认为这是在我们应该考虑的地面上
-		this.player_is_on_ground = delta_vector.y > Math.abs(delta_time * this.velocity.y * 0.25);
+			// 如果player主要是垂直调整，我们认为这是在我们应该考虑的地面上
+			this.player_is_on_ground = delta_vector.y > Math.abs(delta_time * this.velocity.y * 0.25);
 
-		const offset = Math.max(0.0, delta_vector.length() - 1e-5);
-		delta_vector.normalize().multiplyScalar(offset);
+			const offset = Math.max(0.0, delta_vector.length() - 1e-5);
+			delta_vector.normalize().multiplyScalar(offset);
 
-		// 调整player模型位置
-		this.character.position.add(delta_vector);
+			// 调整player模型位置
+			this.character.position.add(delta_vector);
 
-		if (!this.player_is_on_ground) {
-			delta_vector.normalize();
-			this.velocity.addScaledVector(delta_vector, -delta_vector.dot(this.velocity));
-		} else {
-			this.velocity.set(0, 0, 0);
+			if (!this.player_is_on_ground) {
+				delta_vector.normalize();
+				this.velocity.addScaledVector(delta_vector, -delta_vector.dot(this.velocity));
+			} else {
+				this.velocity.set(0, 0, 0);
+			}
 		}
 	}
 
 	/*
 	* 相机碰撞检测优化
 	* */
-	private _checkCameraCollision(colliders: Object3D[]) {
+	private _checkCameraCollision(colliders: Mesh[]) {
 		if (!this.is_first_person) {
 			const ray_direction = new Vector3();
 			ray_direction.subVectors(this.camera.position, this.character.position).normalize();

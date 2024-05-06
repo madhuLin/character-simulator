@@ -3,7 +3,7 @@ import Character from "../character";
 import Character2 from "../character/index2";
 import InteractionDetection from "../interactionDetection";
 import Audio from "../audio";
-import { PerspectiveCamera, Scene } from "three";
+import { PerspectiveCamera, Scene, Mesh } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Control from "../control";
 import Loader from "../loader";
@@ -82,8 +82,8 @@ export default class World {
 
 	update(delta: number) {
 		// 需等待场景加载完毕后更新character，避免初始加载时多余的性能消耗和人物碰撞错误处理
-		if (this.environment.is_load_finished && this.environment.collider) {
-			this.character.update(delta, this.environment.collider);
+		if (this.environment.is_load_finished && this.environment.colliders) {
+			this.character.update(delta, this.environment.colliders as Mesh[]);
 		}
 
 		// 需等待场景及人物加载完毕后更新交互探测，避免初始加载时多余的性能消耗

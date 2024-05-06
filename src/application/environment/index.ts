@@ -1,5 +1,5 @@
 import Loader from "../loader";
-import { COLLISION_SCENE_URL, ON_LOAD_SCENE_FINISH, SCENE_BACKGROUND_TEXTURE, WATER_NORMAL1_TEXTURE, WATER_NORMAL2_TEXTURE, PLAZA_COLLISION_SCENE_URL, PLAZA_FLOOR_SCENE_URL } from "../Constants";
+import { COLLISION_SCENE_URL, ON_LOAD_SCENE_FINISH, SCENE_BACKGROUND_TEXTURE, WATER_NORMAL1_TEXTURE, WATER_NORMAL2_TEXTURE, PLAZA_COLLISION_SCENE_URL, PLAZA_FLOOR_SCENE_URL, PLAZA_UFO_SCENE_URL, PLAZA_DESERT_SCENE_URL, PLAZA_CITY_SCENE_URL } from "../Constants";
 import { Scene, AmbientLight, DirectionalLight, EquirectangularReflectionMapping, Fog, Group, HemisphereLight, Mesh, PlaneGeometry, Vector2, MeshBasicMaterial, DoubleSide } from "three";
 import { Water } from "three/examples/jsm/objects/Water2";
 import type { BVHGeometry } from "../utils/typeAssert";
@@ -18,7 +18,7 @@ export default class Environment {
 	private emitter: Emitter;
 
 	private collision_scene: Group | undefined;
-	collider: Mesh | undefined;
+	colliders: Mesh[] = [];
 	is_load_finished = false;
 
 	constructor({
@@ -95,7 +95,7 @@ export default class Environment {
 					const generate_geometry = static_generator.generate() as BVHGeometry;
 					generate_geometry.boundsTree = new MeshBVH(generate_geometry, { lazyGeneration: false } as MeshBVHOptions);
 
-					const collider = new Mesh(generate_geometry);
+					// const colliders.push(collision_scene);
 					this.scene.add(collision_scene);
 
 					resolve();
@@ -111,9 +111,12 @@ export default class Environment {
 	* */
 	private _loadCollisionScene(): Promise<void> {
 		return new Promise(resolve => {
-			this.loader.gltf_loader.load(PLAZA_COLLISION_SCENE_URL /*COLLISION_SCENE_URL*/, (gltf) => {
-				this.collision_scene = gltf.scene;				
-				// this.collision_scene.updateMatrixWorld(true);
+			this.loader.gltf_loader.load( PLAZA_CITY_SCENE_URL /* PLAZA_UFO_SCENE_URL PLAZA_COLLISION_SCENE_URL COLLISION_SCENE_URL*/, (gltf) => {
+				this.collision_scene = gltf.scene;	
+				// this.collision_scene.scale.set(0.01, 0.01, 0.01);
+				// this.collision_scene.position.y -= 40;
+				// this.collision_scene.scale.set(50, 50, 50);			
+
 				this.collision_scene.traverse(item => {
 					item.castShadow = true;
 					item.receiveShadow = true;
@@ -129,8 +132,8 @@ export default class Environment {
 				const generate_geometry = static_generator.generate() as BVHGeometry;
 				generate_geometry.boundsTree = new MeshBVH(generate_geometry, { lazyGeneration: false } as MeshBVHOptions);
 
-				this.collider = new Mesh(generate_geometry);
-				// this.collider.position.x += 20;
+				this.colliders.push(new Mesh(generate_geometry));
+				// this.colliders.position.x += 20;
 				this.scene.add(this.collision_scene);
 
 
@@ -142,22 +145,27 @@ export default class Environment {
 
 	// private _initFloor(): Promise<void> {
 	// 	return new Promise(resolve => {
-	// 		// 创建地板平面几何体
-	// 		const planeGeometry = new PlaneGeometry(100, 100, 32, 32); // 平面的宽度和高度，以及分段数
+	// 		const planeGeometry = new PlaneGeometry(100, 100, 32, 32);
 	// 		const floorTexture = this.loader.texture_loader.load(PLAZA_FLOOR_SCENE_URL);
 	// 		const planeMaterial = new MeshBasicMaterial({
 	// 			map: floorTexture,
 	// 			side: DoubleSide,
 	// 		});
 	// 		const floor = new Mesh(planeGeometry, planeMaterial);
-	// 		floor.rotation.x = -Math.PI / 2; // 使地板水平
-
+	// 		floor.rotation.x = -Math.PI / 2;
+	
 	// 		// 创建地板碰撞模型
-	// 		// const colliderGeometry = new PlaneGeometry(100, 100, 32, 32); // 使用相同的几何体作为地板
-	// 		this.collider = floor;
-	// 		// this.collider.rotation.x = -Math.PI / 2; // 使碰撞模型水平
+	// 		// 确保碰撞模型与地板视觉模型匹配
+	// 		const colliderGeometry = new PlaneGeometry(100, 100, 32, 32);
+	// 		const colliderMaterial = new MeshBasicMaterial({ visible: false }); // 隐藏碰撞模型
+	// 		const collider = new Mesh(colliderGeometry, colliderMaterial);
+	// 		collider.rotation.x = -Math.PI / 2;
+	
+	// 		this.colliders.push(collider); // 将碰撞模型添加到碰撞检测中
+	
 	// 		this.scene.add(floor);
-
+	// 		this.scene.add(collider); // 将碰撞模型添加到场景中
+	
 	// 		resolve();
 	// 	});
 	// }

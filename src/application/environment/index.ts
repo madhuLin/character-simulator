@@ -1,9 +1,9 @@
 import Loader from "../loader";
-import {COLLISION_SCENE_URL, ON_LOAD_SCENE_FINISH, SCENE_BACKGROUND_TEXTURE, WATER_NORMAL1_TEXTURE, WATER_NORMAL2_TEXTURE} from "../Constants";
-import {Scene, AmbientLight, DirectionalLight, EquirectangularReflectionMapping, Fog, Group, HemisphereLight, Mesh, PlaneGeometry, Vector2} from "three";
-import {Water} from "three/examples/jsm/objects/Water2";
-import type {BVHGeometry} from "../utils/typeAssert";
-import {MeshBVH, StaticGeometryGenerator, type MeshBVHOptions} from "three-mesh-bvh";
+import { COLLISION_SCENE_URL, ON_LOAD_SCENE_FINISH, SCENE_BACKGROUND_TEXTURE, WATER_NORMAL1_TEXTURE, WATER_NORMAL2_TEXTURE, PLAZA_COLLISION_SCENE_URL, PLAZA_FLOOR_SCENE_URL } from "../Constants";
+import { Scene, AmbientLight, DirectionalLight, EquirectangularReflectionMapping, Fog, Group, HemisphereLight, Mesh, PlaneGeometry, Vector2, MeshBasicMaterial, DoubleSide } from "three";
+import { Water } from "three/examples/jsm/objects/Water2";
+import type { BVHGeometry } from "../utils/typeAssert";
+import { MeshBVH, StaticGeometryGenerator, type MeshBVHOptions } from "three-mesh-bvh";
 import Emitter from "../emitter";
 
 interface EnvironmentParams {
@@ -33,14 +33,19 @@ export default class Environment {
 		this._loadEnvironment();
 	}
 
+
 	/*
-	* 加载场景全部物体
-	* */
+* 加载场景全部物体
+* */
 	private async _loadEnvironment() {
 		try {
+			// await this._initFloor();
+			// const arrl = [/*COLLISION_SCENE_URL*/PLAZA_COLLISION_SCENE_URL];
+			// this._loadCollisionScenes(arrl);
 			await this._loadCollisionScene();
 			this._initSceneOtherEffects();
-			this._createWater();
+
+			// this._createWater();
 			this.is_load_finished = true;
 			this.emitter.$emit(ON_LOAD_SCENE_FINISH);
 		} catch (e) {
@@ -48,34 +53,115 @@ export default class Environment {
 		}
 	}
 
+	// /*
+	// * 加载场景全部物体
+	// * */
+	// private async _loadEnvironment() {
+	// 	try {
+	// 		await this._loadCollisionScene();
+	// 		this._initSceneOtherEffects();
+	// 		this._createWater();
+	// 		this.is_load_finished = true;
+	// 		this.emitter.$emit(ON_LOAD_SCENE_FINISH);
+	// 	} catch (e) {
+	// 		console.log(e);
+	// 	}
+	// }
+
+
+
+	/*
+* 加载地图并绑定碰撞
+* */
+	private _loadCollisionScenes(sceneUrls: string[]): Promise<void[]> {
+		const promises: Promise<void>[] = [];
+
+		for (const url of sceneUrls) {
+			promises.push(new Promise<void>(resolve => {
+				this.loader.gltf_loader.load(url, (gltf) => {
+					const collision_scene = gltf.scene;
+
+					collision_scene.updateMatrixWorld(true);
+
+					collision_scene.traverse(item => {
+						item.castShadow = true;
+						item.receiveShadow = true;
+						// console.log(item);
+					});
+
+					const static_generator = new StaticGeometryGenerator(collision_scene);
+					static_generator.attributes = ["position"];
+
+					const generate_geometry = static_generator.generate() as BVHGeometry;
+					generate_geometry.boundsTree = new MeshBVH(generate_geometry, { lazyGeneration: false } as MeshBVHOptions);
+
+					const collider = new Mesh(generate_geometry);
+					this.scene.add(collision_scene);
+
+					resolve();
+				});
+			}));
+		}
+
+		return Promise.all(promises);
+	}
+
 	/*
 	* 加载地图并绑定碰撞
 	* */
 	private _loadCollisionScene(): Promise<void> {
 		return new Promise(resolve => {
-			this.loader.gltf_loader.load(COLLISION_SCENE_URL, (gltf) => {
-				this.collision_scene = gltf.scene;
-
-				this.collision_scene.updateMatrixWorld(true);
-
+			this.loader.gltf_loader.load(PLAZA_COLLISION_SCENE_URL /*COLLISION_SCENE_URL*/, (gltf) => {
+				this.collision_scene = gltf.scene;				
+				// this.collision_scene.updateMatrixWorld(true);
 				this.collision_scene.traverse(item => {
 					item.castShadow = true;
 					item.receiveShadow = true;
 				});
+				
+				// this.collision_scene.position.x += 20;
+				this.collision_scene.updateMatrixWorld(true);
+				
 
 				const static_generator = new StaticGeometryGenerator(this.collision_scene);
 				static_generator.attributes = ["position"];
-
+				console.log(static_generator.attributes);
 				const generate_geometry = static_generator.generate() as BVHGeometry;
-				generate_geometry.boundsTree = new MeshBVH(generate_geometry, {lazyGeneration: false} as MeshBVHOptions);
+				generate_geometry.boundsTree = new MeshBVH(generate_geometry, { lazyGeneration: false } as MeshBVHOptions);
 
 				this.collider = new Mesh(generate_geometry);
+				// this.collider.position.x += 20;
 				this.scene.add(this.collision_scene);
+
 
 				resolve();
 			});
 		});
 	}
+
+
+	// private _initFloor(): Promise<void> {
+	// 	return new Promise(resolve => {
+	// 		// 创建地板平面几何体
+	// 		const planeGeometry = new PlaneGeometry(100, 100, 32, 32); // 平面的宽度和高度，以及分段数
+	// 		const floorTexture = this.loader.texture_loader.load(PLAZA_FLOOR_SCENE_URL);
+	// 		const planeMaterial = new MeshBasicMaterial({
+	// 			map: floorTexture,
+	// 			side: DoubleSide,
+	// 		});
+	// 		const floor = new Mesh(planeGeometry, planeMaterial);
+	// 		floor.rotation.x = -Math.PI / 2; // 使地板水平
+
+	// 		// 创建地板碰撞模型
+	// 		// const colliderGeometry = new PlaneGeometry(100, 100, 32, 32); // 使用相同的几何体作为地板
+	// 		this.collider = floor;
+	// 		// this.collider.rotation.x = -Math.PI / 2; // 使碰撞模型水平
+	// 		this.scene.add(floor);
+
+	// 		resolve();
+	// 	});
+	// }
+
 
 	/*
 	* 创建环境灯光、场景贴图、场景雾
@@ -88,7 +174,7 @@ export default class Environment {
 		direction_light.shadow.camera.far = 500;
 		direction_light.shadow.camera.right = 30;
 		direction_light.shadow.camera.left = -30;
-		direction_light.shadow.camera.top	= 30;
+		direction_light.shadow.camera.top = 30;
 		direction_light.shadow.camera.bottom = -30;
 		direction_light.shadow.mapSize.width = 1024;
 		direction_light.shadow.mapSize.height = 1024;

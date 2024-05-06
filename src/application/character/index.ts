@@ -31,7 +31,9 @@ type Actions = "idle" | "walk" | "jump";
 // 可选配置项默认值
 const default_params: OptionalParams = {
 	is_first_person: false,
-	reset_position: new Vector3(-10, 2.5, 10),
+	// reset_position: new Vector3(-10, 2.5, 10),
+	reset_position: new Vector3(0, 20, 0),
+
 	reset_y: -25,
 	speed: 3,
 	jump_height: 12,
@@ -112,6 +114,7 @@ export default class Character {
 	}
 
 	update(delta_time: number, scene_collider: Mesh | null) {
+		// console.log("scene_collider",scene_collider);
 		if (!scene_collider || !this.character) return;
 
 		this._updateControls();
@@ -365,6 +368,8 @@ export default class Character {
 				}
 			});
 		}
+
+		// console.log("this.player_is_on_ground",this.player_is_on_ground);
 
 		// 检查后得到胶囊体对撞机的调整位置
 		// 场景碰撞并移动它. capsule_info.segment.start被假定为玩家模型的原点。

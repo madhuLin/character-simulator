@@ -55,29 +55,17 @@ export default class World {
 			loader: this.loader,
 			emitter: this.emitter
 		});
-		console.log("mode",mode,this.mode);
+		console.log("mode", mode, this.mode);
 
-		if (mode == "OrbitControls") {
-			console.log(OrbitControls);
-			this.character = new Character({
-				scene: this.scene,
-				camera: this.camera,
-				controls: this.controls,
-				control: this.control,
-				loader: this.loader,
-				emitter: this.emitter,
-			});
-		}
-		else {
-			this.character = new Character2({
-				scene: this.scene,
-				camera: this.camera,
-				controls: this.controls,
-				control: this.control,
-				loader: this.loader,
-				emitter: this.emitter,
-			});
-		}
+		console.log(OrbitControls);
+		this.character = new Character({
+			scene: this.scene,
+			camera: this.camera,
+			controls: this.controls,
+			control: this.control,
+			loader: this.loader,
+			emitter: this.emitter,
+		});
 
 
 		this.interaction_detection = new InteractionDetection({
@@ -85,11 +73,11 @@ export default class World {
 			emitter: this.emitter
 		});
 
-		// this.audio = new Audio({
-		// 	scene: this.scene,
-		// 	camera: this.camera,
-		// 	loader: this.loader
-		// });
+		this.audio = new Audio({
+			scene: this.scene,
+			camera: this.camera,
+			loader: this.loader
+		});
 	}
 
 	update(delta: number) {

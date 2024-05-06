@@ -1,9 +1,9 @@
-import {ACESFilmicToneMapping, Clock, Color, PerspectiveCamera, Scene, SRGBColorSpace, VSMShadowMap, WebGLRenderer} from "three";
+import { ACESFilmicToneMapping, Clock, Color, PerspectiveCamera, Scene, SRGBColorSpace, VSMShadowMap, WebGLRenderer } from "three";
 import World from "../world";
 import Emitter from "../emitter";
 import Loader from "../loader";
 import Control from "../control";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { PointerLockControls } from "three-stdlib";
 export default class Core {
 	scene: Scene;
@@ -20,24 +20,22 @@ export default class Core {
 
 	constructor() {
 		this.scene = new Scene();
-		this.renderer = new WebGLRenderer({antialias: true});
+		this.renderer = new WebGLRenderer({ antialias: true });
 		this.camera = new PerspectiveCamera();
 		this.clock = new Clock();
 		// this.mode = "PointerLockControls";
 		this.mode = "OrbitControls";
-		
-		if(this.mode =="OrbitControls") {
-			console.log(this.mode);
-			this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-			this.controls.enablePan = false;
-		}
-		else {
-			this.controls = new PointerLockControls(this.camera, this.renderer.domElement);
-		}
-		
-		
-		
-		
+
+		console.log("this.mode");
+		console.log(this.mode);
+		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+		this.controls.enablePan = false;
+
+
+
+
+
+
 
 		this._initScene();
 		this._initCamera();

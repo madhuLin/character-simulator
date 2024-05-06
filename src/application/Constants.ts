@@ -39,4 +39,5 @@ export const AUDIO_URL = new URL("../assets/audio/Midnight City.m4a", import.met
 
 
 //mode == Plaza
-export const PLAZA_COLLISION_SCENE_URL = new URL("../assets/test/KBCL.glb", import.meta.url).href;
+export const PLAZA_COLLISION_SCENE_URL = new URL("../assets/models/KBCL.glb", import.meta.url).href;
+export const PLAZA_FLOOR_SCENE_URL = new URL("../assets/img/WoodFloor_2K.jpg", import.meta.url).href;

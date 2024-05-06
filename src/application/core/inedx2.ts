@@ -4,7 +4,7 @@ import Emitter from "../emitter";
 import Loader from "../loader";
 import Control from "../control";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-// import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import { PointerLockControls } from "three-stdlib";
 import { PLAZA_COLLISION_SCENE_URL } from "../Constants"
 
@@ -13,7 +13,7 @@ export default class Core {
 	renderer: WebGLRenderer;
 	camera: PerspectiveCamera;
 	clock: Clock;
-	pointerLock_controls: PointerLockControls;
+	controls: OrbitControls | PointerLockControls;
 
 	emitter: Emitter;
 	control: Control;
@@ -25,7 +25,8 @@ export default class Core {
 		this.renderer = new WebGLRenderer({antialias: true});
 		this.camera = new PerspectiveCamera();
 		this.clock = new Clock();
-		this.pointerLock_controls = new PointerLockControls(this.camera, this.renderer.domElement);
+		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+		this.controls.enablePan = false;
 
 
 		this._initScene();
@@ -46,53 +47,16 @@ export default class Core {
 		this.world = new World({
 			scene: this.scene,
 			camera: this.camera,
-			controls: this.pointerLock_controls,
+			controls: this.controls,
 			control: this.control,
 			loader: this.loader,
-			emitter: this.emitter
+			emitter: this.emitter,
+			mode: "",
 		});
 		
 
-		// 创建平面几何体
-		const planeGeometry = new PlaneGeometry(100, 100, 32, 32); // 平面的宽度和高度，以及分段数
-		const planeMaterial = new MeshBasicMaterial({ color: new Color(0xff0000) }); // 红色材质
-		const plane = new Mesh(planeGeometry, planeMaterial);
-		plane.rotation.x = -Math.PI / 2; // 使平面水平
-		this.scene.add(plane);
-
 	}
 
-	/*
-* 创建环境灯光、场景贴图、场景雾
-* */
-	private _initSceneOtherEffects() {
-		const direction_light = new DirectionalLight(0xffffff, 1);
-		direction_light.position.set(-5, 25, -1);
-		direction_light.castShadow = true;
-		direction_light.shadow.camera.near = 0.01;
-		direction_light.shadow.camera.far = 500;
-		direction_light.shadow.camera.right = 30;
-		direction_light.shadow.camera.left = -30;
-		direction_light.shadow.camera.top = 30;
-		direction_light.shadow.camera.bottom = -30;
-		direction_light.shadow.mapSize.width = 1024;
-		direction_light.shadow.mapSize.height = 1024;
-		direction_light.shadow.radius = 2;
-		direction_light.shadow.bias = -0.00006;
-		this.scene.add(direction_light);
-
-		const fill_light = new HemisphereLight(0xffffff, 0xe49959, 1);
-		fill_light.position.set(2, 1, 1);
-		this.scene.add(fill_light);
-
-		this.scene.add(new AmbientLight(0xffffff, 1));
-
-		// this.scene.fog = new Fog(0xcccccc, 10, 900);
-
-		// const texture = this.loader.texture_loader.load(SCENE_BACKGROUND_TEXTURE);
-		// texture.mapping = EquirectangularReflectionMapping;
-		// this.scene.background = texture;
-	}
 
 
 	/*
@@ -122,6 +86,9 @@ export default class Core {
 			this.renderer.render(this.scene, this.camera);
 			const delta_time = Math.min(0.05, this.clock.getDelta());
 			this.world.update(delta_time);
+			if (this.controls instanceof OrbitControls) {
+				this.controls.update();
+			}
 		});
 	}
 

@@ -53,11 +53,11 @@ export default class World {
 		this.environment = new Environment({
 			scene: this.scene,
 			loader: this.loader,
-			emitter: this.emitter
+			emitter: this.emitter,
+			mode: this.mode,
 		});
 		console.log("mode", mode, this.mode);
 
-		console.log(OrbitControls);
 		this.character = new Character({
 			scene: this.scene,
 			camera: this.camera,

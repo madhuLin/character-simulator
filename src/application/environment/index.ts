@@ -9,13 +9,15 @@ import Emitter from "../emitter";
 interface EnvironmentParams {
 	scene: Scene;
 	loader: Loader;
-	emitter: Emitter
+	emitter: Emitter;
+	mode: string;
 }
 
 export default class Environment {
 	private scene: Scene;
 	private loader: Loader;
 	private emitter: Emitter;
+	private mode: string;
 
 	private collision_scene: Group | undefined;
 	colliders: Mesh[] = [];
@@ -25,12 +27,19 @@ export default class Environment {
 		scene,
 		loader,
 		emitter,
+		mode,
 	}: EnvironmentParams) {
 		this.scene = scene;
 		this.loader = loader;
 		this.emitter = emitter;
+		this.mode = mode;
+		if (this.mode === "") {
+			this._loadEnvironment();
+		}
+		else {
 
-		this._loadEnvironment();
+		}
+		
 	}
 
 
@@ -118,6 +127,7 @@ export default class Environment {
 				// this.collision_scene.scale.set(50, 50, 50);			
 
 				this.collision_scene.traverse(item => {
+					console.log(item);
 					item.castShadow = true;
 					item.receiveShadow = true;
 				});

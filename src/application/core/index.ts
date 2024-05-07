@@ -18,22 +18,15 @@ export default class Core {
 	world: World;
 	mode: string;
 
-	constructor() {
+	constructor(mode: string =  "") {
 		this.scene = new Scene();
 		this.renderer = new WebGLRenderer({ antialias: true });
 		this.camera = new PerspectiveCamera();
 		this.clock = new Clock();
 		// this.mode = "PointerLockControls";
-		this.mode = "OrbitControls";
-
-		console.log("this.mode");
-		console.log(this.mode);
+		this.mode = mode;
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 		this.controls.enablePan = false;
-
-
-
-
 
 
 

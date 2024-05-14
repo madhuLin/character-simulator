@@ -22,7 +22,7 @@ export default class Environment {
 	private collision_scene: Group | undefined;
 	colliders: Mesh[] = [];
 	is_load_finished = false;
-	raycast_objects:Object3D[] = [];
+	raycast_objects: Object3D[] = [];
 
 	constructor({
 		scene,
@@ -34,25 +34,26 @@ export default class Environment {
 		this.loader = loader;
 		this.emitter = emitter;
 		this.mode = mode;
-		if (this.mode === "") {
-			this._loadEnvironment();
+		if (this.mode === "Plaza") {
+			console.log("Plaza");
+			this._loadEnvironment(PLAZA_CITY_SCENE_URL);
 		}
-		else {
+		else if (this.mode === "Entertainment") {
+			this._loadEntertainmentEnvironment(COLLISION_SCENE_URL);
+		}
 
-		}
-		
 	}
 
 
 	/*
 * 加载场景全部物体
 * */
-	private async _loadEnvironment() {
+	private async _loadEnvironment(SCENE_URL:string) {
 		try {
 			// await this._initFloor();
 			// const arrl = [/*COLLISION_SCENE_URL*/PLAZA_COLLISION_SCENE_URL];
 			// this._loadCollisionScenes(arrl);
-			await this._loadCollisionScene();
+			await this._loadCollisionScene(SCENE_URL);
 			this._initSceneOtherEffects();
 			this._initDoor();
 
@@ -65,22 +66,40 @@ export default class Environment {
 		}
 	}
 
+	/*
+* 加载场景全部物体
+* */
+	private async _loadEntertainmentEnvironment(SCENE_URL:string) {
+		try {
+			await this._loadCollisionScene(SCENE_URL);
+			this._initSceneOtherEffects();
+			// this._initDoor();
+
+
+			this._createWater();
+			this.is_load_finished = true;
+			this.emitter.$emit(ON_LOAD_SCENE_FINISH);
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
 
 	private _initDoor() {
-		
+
 		const planeGeometry = new PlaneGeometry(2, 3.5, 1, 1);
-			const floorTexture = this.loader.texture_loader.load(PLAZA_FLOOR_SCENE_URL);
-			const planeMaterial = new MeshBasicMaterial({
-				map: floorTexture,
-				side: DoubleSide,
-			});
-			const door = new Mesh(planeGeometry, planeMaterial);
-			door.position.set(19, 0, -18);
-			// door.position.set(20, 0, -16);
-			this.scene.add(door);
-			// floor.rotation.x = -Math.PI / 2;
-			door.userData.mode = "Entertainment";
-			this.raycast_objects.push(door);
+		const floorTexture = this.loader.texture_loader.load(PLAZA_FLOOR_SCENE_URL);
+		const planeMaterial = new MeshBasicMaterial({
+			map: floorTexture,
+			side: DoubleSide,
+		});
+		const door = new Mesh(planeGeometry, planeMaterial);
+		door.position.set(19, 0, -18);
+		// door.position.set(20, 0, -16);
+		this.scene.add(door);
+		// floor.rotation.x = -Math.PI / 2;
+		door.userData.mode = "Entertainment";
+		this.raycast_objects.push(door);
 		// throw new Error("Method not implemented.");
 	}
 
@@ -103,10 +122,10 @@ export default class Environment {
 	/*
 	* 加载地图并绑定碰撞
 	* */
-	private _loadCollisionScene(): Promise<void> {
+	private _loadCollisionScene(SCENE_URL:string): Promise<void> {
 		return new Promise(resolve => {
-			this.loader.gltf_loader.load( PLAZA_CITY_SCENE_URL /* PLAZA_UFO_SCENE_URL PLAZA_COLLISION_SCENE_URL COLLISION_SCENE_URL*/, (gltf) => {
-				this.collision_scene = gltf.scene;	
+			this.loader.gltf_loader.load(SCENE_URL /* PLAZA_UFO_SCENE_URL PLAZA_COLLISION_SCENE_URL COLLISION_SCENE_URL*/, (gltf) => {
+				this.collision_scene = gltf.scene;
 				// this.collision_scene.scale.set(0.01, 0.01, 0.01);
 				// this.collision_scene.position.y -= 40;
 				// this.collision_scene.scale.set(50, 50, 50);			
@@ -116,10 +135,10 @@ export default class Environment {
 					item.castShadow = true;
 					item.receiveShadow = true;
 				});
-				
+
 				// this.collision_scene.position.x += 20;
 				this.collision_scene.updateMatrixWorld(true);
-				
+
 
 				const static_generator = new StaticGeometryGenerator(this.collision_scene);
 				static_generator.attributes = ["position"];
@@ -148,19 +167,19 @@ export default class Environment {
 	// 		});
 	// 		const floor = new Mesh(planeGeometry, planeMaterial);
 	// 		floor.rotation.x = -Math.PI / 2;
-	
+
 	// 		// 创建地板碰撞模型
 	// 		// 确保碰撞模型与地板视觉模型匹配
 	// 		const colliderGeometry = new PlaneGeometry(100, 100, 32, 32);
 	// 		const colliderMaterial = new MeshBasicMaterial({ visible: false }); // 隐藏碰撞模型
 	// 		const collider = new Mesh(colliderGeometry, colliderMaterial);
 	// 		collider.rotation.x = -Math.PI / 2;
-	
+
 	// 		this.colliders.push(collider); // 将碰撞模型添加到碰撞检测中
-	
+
 	// 		this.scene.add(floor);
 	// 		this.scene.add(collider); // 将碰撞模型添加到场景中
-	
+
 	// 		resolve();
 	// 	});
 	// }

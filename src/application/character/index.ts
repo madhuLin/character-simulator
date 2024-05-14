@@ -31,8 +31,8 @@ type Actions = "idle" | "walk" | "jump";
 // 可选配置项默认值
 const default_params: OptionalParams = {
 	is_first_person: false,
-	// reset_position: new Vector3(-10, 2.5, 10),
-	reset_position: new Vector3(0, 5, 0),
+	reset_position: new Vector3(-10, 2.5, 10),
+	// reset_position: new Vector3(0, 5, 0),
 
 	reset_y: -25,
 	speed: 3,

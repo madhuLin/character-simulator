@@ -120,7 +120,7 @@ const onEnterApp = () => {
 };
 
 onMounted(() => {
-    core = new Core();
+    core = new Core("Plaza");
     core.render();
 
     core.emitter.$on(ON_INTERSECT_TRIGGER, onIntersectTrigger);

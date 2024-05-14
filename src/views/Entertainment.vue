@@ -116,7 +116,7 @@
   };
   
   onMounted(() => {
-      core = new Core();
+      core = new Core("Entertainment");
       core.render();
   
       core.emitter.$on(ON_INTERSECT_TRIGGER, onIntersectTrigger);

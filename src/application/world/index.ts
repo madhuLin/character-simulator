@@ -9,6 +9,7 @@ import Control from "../control";
 import Loader from "../loader";
 import Emitter from "../emitter";
 import { PointerLockControls } from "three-stdlib";
+import RayCasterControls from "../rayCasterControls";
 
 interface WorldParams {
 	scene: Scene;
@@ -28,7 +29,8 @@ export default class World {
 	private readonly loader: Loader;
 	private readonly emitter: Emitter;
 	private readonly mode: string;
-
+	
+	ray_caster_controls: RayCasterControls;
 	environment: Environment;
 	character: Character | Character2;
 	interaction_detection: InteractionDetection;
@@ -78,12 +80,21 @@ export default class World {
 			camera: this.camera,
 			loader: this.loader
 		});
+
+		this.ray_caster_controls = new RayCasterControls({
+			camera: this.camera,
+			emitter: this.emitter
+		});
+
+
+		
 	}
 
 	update(delta: number) {
 		// 需等待场景加载完毕后更新character，避免初始加载时多余的性能消耗和人物碰撞错误处理
 		if (this.environment.is_load_finished && this.environment.colliders) {
 			this.character.update(delta, this.environment.colliders as Mesh[]);
+			this.ray_caster_controls.updateTooltipRayCast(this.environment.raycast_objects);
 		}
 
 		// 需等待场景及人物加载完毕后更新交互探测，避免初始加载时多余的性能消耗

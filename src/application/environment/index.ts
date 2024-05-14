@@ -1,6 +1,6 @@
 import Loader from "../loader";
 import { COLLISION_SCENE_URL, ON_LOAD_SCENE_FINISH, SCENE_BACKGROUND_TEXTURE, WATER_NORMAL1_TEXTURE, WATER_NORMAL2_TEXTURE, PLAZA_COLLISION_SCENE_URL, PLAZA_FLOOR_SCENE_URL, PLAZA_UFO_SCENE_URL, PLAZA_DESERT_SCENE_URL, PLAZA_CITY_SCENE_URL } from "../Constants";
-import { Scene, AmbientLight, DirectionalLight, EquirectangularReflectionMapping, Fog, Group, HemisphereLight, Mesh, PlaneGeometry, Vector2, MeshBasicMaterial, DoubleSide } from "three";
+import { Scene, AmbientLight, DirectionalLight, EquirectangularReflectionMapping, Fog, Group, HemisphereLight, Mesh, PlaneGeometry, Vector2, MeshBasicMaterial, DoubleSide, Object3D } from "three";
 import { Water } from "three/examples/jsm/objects/Water2";
 import type { BVHGeometry } from "../utils/typeAssert";
 import { MeshBVH, StaticGeometryGenerator, type MeshBVHOptions } from "three-mesh-bvh";
@@ -22,6 +22,7 @@ export default class Environment {
 	private collision_scene: Group | undefined;
 	colliders: Mesh[] = [];
 	is_load_finished = false;
+	raycast_objects:Object3D[] = [];
 
 	constructor({
 		scene,
@@ -53,6 +54,8 @@ export default class Environment {
 			// this._loadCollisionScenes(arrl);
 			await this._loadCollisionScene();
 			this._initSceneOtherEffects();
+			this._initDoor();
+
 
 			// this._createWater();
 			this.is_load_finished = true;
@@ -60,6 +63,25 @@ export default class Environment {
 		} catch (e) {
 			console.log(e);
 		}
+	}
+
+
+	private _initDoor() {
+		
+		const planeGeometry = new PlaneGeometry(2, 3.5, 1, 1);
+			const floorTexture = this.loader.texture_loader.load(PLAZA_FLOOR_SCENE_URL);
+			const planeMaterial = new MeshBasicMaterial({
+				map: floorTexture,
+				side: DoubleSide,
+			});
+			const door = new Mesh(planeGeometry, planeMaterial);
+			door.position.set(19, 0, -18);
+			// door.position.set(20, 0, -16);
+			this.scene.add(door);
+			// floor.rotation.x = -Math.PI / 2;
+			door.userData.mode = "Entertainment";
+			this.raycast_objects.push(door);
+		// throw new Error("Method not implemented.");
 	}
 
 	// /*
@@ -78,43 +100,6 @@ export default class Environment {
 	// }
 
 
-
-	/*
-* 加载地图并绑定碰撞
-* */
-	private _loadCollisionScenes(sceneUrls: string[]): Promise<void[]> {
-		const promises: Promise<void>[] = [];
-
-		for (const url of sceneUrls) {
-			promises.push(new Promise<void>(resolve => {
-				this.loader.gltf_loader.load(url, (gltf) => {
-					const collision_scene = gltf.scene;
-
-					collision_scene.updateMatrixWorld(true);
-
-					collision_scene.traverse(item => {
-						item.castShadow = true;
-						item.receiveShadow = true;
-						// console.log(item);
-					});
-
-					const static_generator = new StaticGeometryGenerator(collision_scene);
-					static_generator.attributes = ["position"];
-
-					const generate_geometry = static_generator.generate() as BVHGeometry;
-					generate_geometry.boundsTree = new MeshBVH(generate_geometry, { lazyGeneration: false } as MeshBVHOptions);
-
-					// const colliders.push(collision_scene);
-					this.scene.add(collision_scene);
-
-					resolve();
-				});
-			}));
-		}
-
-		return Promise.all(promises);
-	}
-
 	/*
 	* 加载地图并绑定碰撞
 	* */
@@ -127,7 +112,7 @@ export default class Environment {
 				// this.collision_scene.scale.set(50, 50, 50);			
 
 				this.collision_scene.traverse(item => {
-					console.log(item);
+					// console.log(item);
 					item.castShadow = true;
 					item.receiveShadow = true;
 				});

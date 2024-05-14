@@ -32,7 +32,7 @@ type Actions = "idle" | "walk" | "jump";
 const default_params: OptionalParams = {
 	is_first_person: false,
 	// reset_position: new Vector3(-10, 2.5, 10),
-	reset_position: new Vector3(0, 10, 0),
+	reset_position: new Vector3(0, 5, 0),
 
 	reset_y: -25,
 	speed: 3,
@@ -254,7 +254,7 @@ export default class Character {
 			this.temp_vector.set(1, 0, 0).applyAxisAngle(this.up_vector, angle);
 			this.character.position.addScaledVector(this.temp_vector, this.speed * delta_time);
 		}
-
+		// console.log(this.character.position);
 		this.character.updateMatrixWorld();
 	}
 

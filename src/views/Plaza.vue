@@ -6,6 +6,8 @@
     <notify-tips ref="notify_ref" />
 
     <load-progress v-model="percentage" :text="loading_text" @on-enter="onEnterApp" />
+
+    <Tool v-if="isToolVisible" :sceneValue="sceneValue" @effetParams="handleToolCompleted" @close="() => isToolVisible=false"></Tool>
 </template>
 
 <script setup lang="ts">
@@ -13,17 +15,71 @@ import LoadProgress from "@/components/LoadProgress.vue";
 import NesGameDialog from "@/components/NesGameDialog.vue";
 import NotifyTips from "@/components/NotifyTips.vue";
 import Core from "@/application/core";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, onBeforeUnmount, reactive } from "vue";
 import { ON_INTERSECT_TRIGGER, ON_INTERSECT_TRIGGER_STOP, ON_KEY_DOWN, ON_LOAD_PROGRESS, ON_CLICK_RAY_CAST } from "@/application/Constants";
 import type { InteractionMesh } from "@/application/interactionDetection/types";
 import { PointerLockControls } from "three-stdlib";
 import router from "@/router";
+import Tool from "@/components/Tool.vue";
 const notify_ref = ref<InstanceType<typeof NotifyTips>>();
 const game_dialog_ref = ref<InstanceType<typeof NesGameDialog>>();
 
 // 加载相关
 const percentage = ref(0);
 const loading_text = ref("加载中...");
+
+// 工具相关
+const isToolVisible = ref<boolean>(false);
+
+const toggleToolVisibility = (event: KeyboardEvent) => {
+  if (event.key === 'Tab') {
+    isToolVisible.value = !isToolVisible.value;
+    event.preventDefault(); // 防止 Tab 鍵的默認行為
+  }
+};
+
+interface SceneValue {
+    timeOfDay: string;
+    weather: string;
+    character: string;
+}
+
+// 创建一个 ref 来存储选中的值
+let sceneValue = reactive<SceneValue>({
+    timeOfDay: "morning",
+    weather: "sunny",
+    character: "boy"
+});
+
+// 定义触发事件的方法
+const handleToolCompleted = (value: {  timeOfDay:string, weather: string, character: string }) => {
+    isToolVisible.value = false;
+    console.log(value);
+    sceneValue.timeOfDay = value.timeOfDay;
+    sceneValue.weather = value.weather;
+    sceneValue.character = value.character;
+    if(value.timeOfDay == "morning") {
+        core!.world.environment.setTime("morning");
+    }
+    else if(value.timeOfDay == "afternoon") {
+        core!.world.environment.setTime("afternoon");
+    }
+    else if(value.timeOfDay == "night") {
+        core!.world.environment.setTime("night");
+    }
+
+    if(value.weather == "sunny") {
+        core!.world.environment.setWeather("sunny");
+    }
+    else if(value.weather == "rainy") {
+        core!.world.environment.setWeather("rainy");
+    }
+    else if(value.weather == "snowy") {
+        core!.world.environment.setWeather("snowy");
+    }
+};
+
+
 
 let core: Core | undefined = undefined;
 
@@ -128,6 +184,11 @@ onMounted(() => {
     core.emitter.$on(ON_KEY_DOWN, onKeyDown);
     core.emitter.$on(ON_LOAD_PROGRESS, onLoadProgress);
     core.emitter.$on(ON_CLICK_RAY_CAST, onJumpScene);
+    window.addEventListener('keydown', toggleToolVisibility);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', toggleToolVisibility);
 });
 </script>
 

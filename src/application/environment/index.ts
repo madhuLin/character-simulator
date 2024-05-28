@@ -1,10 +1,19 @@
 import Loader from "../loader";
-import { COLLISION_SCENE_URL, ON_LOAD_SCENE_FINISH, SCENE_BACKGROUND_TEXTURE, WATER_NORMAL1_TEXTURE, WATER_NORMAL2_TEXTURE, PLAZA_COLLISION_SCENE_URL, PLAZA_FLOOR_SCENE_URL, PLAZA_UFO_SCENE_URL, PLAZA_DESERT_SCENE_URL, PLAZA_CITY_SCENE_URL } from "../Constants";
-import { Scene, AmbientLight, DirectionalLight, EquirectangularReflectionMapping, Fog, Group, HemisphereLight, Mesh, PlaneGeometry, Vector2, MeshBasicMaterial, DoubleSide, Object3D } from "three";
+import {
+	COLLISION_SCENE_URL, ON_LOAD_SCENE_FINISH, SCENE_BACKGROUND_TEXTURE, WATER_NORMAL1_TEXTURE,
+	WATER_NORMAL2_TEXTURE, PLAZA_COLLISION_SCENE_URL, PLAZA_FLOOR_SCENE_URL, PLAZA_UFO_SCENE_URL,
+	PLAZA_DESERT_SCENE_URL, PLAZA_CITY_SCENE_URL, PLAZA_EFFECT_SCENE_URL
+} from "../Constants";
+import {
+	Scene, AmbientLight, DirectionalLight, EquirectangularReflectionMapping, Fog, Group, HemisphereLight,
+	Mesh, PlaneGeometry, Vector2, MeshBasicMaterial, DoubleSide, Object3D, MeshLambertMaterial, PointLight
+} from "three";
 import { Water } from "three/examples/jsm/objects/Water2";
 import type { BVHGeometry } from "../utils/typeAssert";
 import { MeshBVH, StaticGeometryGenerator, type MeshBVHOptions } from "three-mesh-bvh";
 import Emitter from "../emitter";
+import { SnowScene } from "./snowscene";
+import { RainScene } from "./rainscene";
 
 interface EnvironmentParams {
 	scene: Scene;
@@ -24,6 +33,10 @@ export default class Environment {
 	is_load_finished = false;
 	raycast_objects: Object3D[] = [];
 
+	snowScene: SnowScene | undefined;
+	rainScene: RainScene | undefined;
+	cloudParticles: Mesh[] = [];
+	private weather: string = "sunny";
 	constructor({
 		scene,
 		loader,
@@ -34,6 +47,7 @@ export default class Environment {
 		this.loader = loader;
 		this.emitter = emitter;
 		this.mode = mode;
+
 		if (this.mode === "Plaza") {
 			console.log("Plaza");
 			this._loadEnvironment(PLAZA_CITY_SCENE_URL);
@@ -48,13 +62,13 @@ export default class Environment {
 	/*
 * 加载场景全部物体
 * */
-	private async _loadEnvironment(SCENE_URL:string) {
+	private async _loadEnvironment(SCENE_URL: string) {
 		try {
 			// await this._initFloor();
 			// const arrl = [/*COLLISION_SCENE_URL*/PLAZA_COLLISION_SCENE_URL];
 			// this._loadCollisionScenes(arrl);
 			await this._loadCollisionScene(SCENE_URL);
-			this._initSceneOtherEffects();
+			this._initSceneOtherEffectsMorning();
 			this._initDoor();
 
 
@@ -69,10 +83,10 @@ export default class Environment {
 	/*
 * 加载场景全部物体
 * */
-	private async _loadEntertainmentEnvironment(SCENE_URL:string) {
+	private async _loadEntertainmentEnvironment(SCENE_URL: string) {
 		try {
 			await this._loadCollisionScene(SCENE_URL);
-			this._initSceneOtherEffects();
+			this._initSceneOtherEffectsMorning();
 			// this._initDoor();
 
 
@@ -82,6 +96,26 @@ export default class Environment {
 		} catch (e) {
 			console.log(e);
 		}
+	}
+
+	/*
+	* 创建户外水池
+	* */
+	private _createWater() {
+		const water = new Water(new PlaneGeometry(8.5, 38, 1024, 1024), {
+			color: 0xffffff,
+			scale: 0.3,
+			flowDirection: new Vector2(3, 1),
+			textureHeight: 1024,
+			textureWidth: 1024,
+			flowSpeed: 0.001,
+			reflectivity: 0.05,
+			normalMap0: this.loader.texture_loader.load(WATER_NORMAL1_TEXTURE),
+			normalMap1: this.loader.texture_loader.load(WATER_NORMAL2_TEXTURE)
+		});
+		water.position.set(-1, 0, -30.5);
+		water.rotation.x = -(Math.PI / 2);
+		this.scene.add(water);
 	}
 
 
@@ -122,7 +156,7 @@ export default class Environment {
 	/*
 	* 加载地图并绑定碰撞
 	* */
-	private _loadCollisionScene(SCENE_URL:string): Promise<void> {
+	private _loadCollisionScene(SCENE_URL: string): Promise<void> {
 		return new Promise(resolve => {
 			this.loader.gltf_loader.load(SCENE_URL /* PLAZA_UFO_SCENE_URL PLAZA_COLLISION_SCENE_URL COLLISION_SCENE_URL*/, (gltf) => {
 				this.collision_scene = gltf.scene;
@@ -188,7 +222,43 @@ export default class Environment {
 	/*
 	* 创建环境灯光、场景贴图、场景雾
 	* */
-	private _initSceneOtherEffects() {
+	private _initSceneOtherEffectsNight() {
+		this.loader.texture_loader.load(PLAZA_EFFECT_SCENE_URL, (texture) => {
+			const cloudGeo = new PlaneGeometry(500, 500);
+			const cloudMaterial = new MeshLambertMaterial({
+				map: texture,
+				transparent: true
+			});
+
+			for (let p = 0; p < 25; p++) {
+				const cloud = new Mesh(cloudGeo, cloudMaterial);
+				cloud.position.set(
+					Math.random() * 800 - 400,
+					500,
+					Math.random() * 500 - 450
+				);
+				cloud.rotation.x = 1.16;
+				cloud.rotation.y = -0.12;
+				cloud.rotation.z = Math.random() * 360;
+				cloud.material.opacity = 0.6;
+				this.cloudParticles.push(cloud);
+				this.scene.add(cloud);
+			}
+
+			const ambient = new AmbientLight(0x555555);
+			this.scene.add(ambient);
+
+			const directionalLight = new DirectionalLight(0xffeedd);
+			directionalLight.position.set(0, 0, 1);
+			this.scene.add(directionalLight);
+
+			const flash = new PointLight(0x062d89, 30, 500, 1.7);
+			flash.position.set(200, 300, 100);
+			this.scene.add(flash);
+		});
+	}
+
+	private _initSceneOtherEffectsMorning() {
 		const direction_light = new DirectionalLight(0xffffff, 1);
 		direction_light.position.set(-5, 25, -1);
 		direction_light.castShadow = true;
@@ -217,23 +287,104 @@ export default class Environment {
 		this.scene.background = texture;
 	}
 
-	/*
-	* 创建户外水池
-	* */
-	private _createWater() {
-		const water = new Water(new PlaneGeometry(8.5, 38, 1024, 1024), {
-			color: 0xffffff,
-			scale: 0.3,
-			flowDirection: new Vector2(3, 1),
-			textureHeight: 1024,
-			textureWidth: 1024,
-			flowSpeed: 0.001,
-			reflectivity: 0.05,
-			normalMap0: this.loader.texture_loader.load(WATER_NORMAL1_TEXTURE),
-			normalMap1: this.loader.texture_loader.load(WATER_NORMAL2_TEXTURE)
+
+	private clearEffects(): void {
+		// 移除云朵效果
+		this.cloudParticles.forEach(cloud => {
+			this.scene.remove(cloud);
 		});
-		water.position.set(-1, 0, -30.5);
-		water.rotation.x = -(Math.PI / 2);
-		this.scene.add(water);
+		this.cloudParticles = [];
+
+		// 移除光源和其他效果
+		this.scene.children.forEach(child => {
+			// 移除DirectionalLight
+			if (child instanceof DirectionalLight) {
+				this.scene.remove(child);
+			}
+			// 移除HemisphereLight
+			if (child instanceof HemisphereLight) {
+				this.scene.remove(child);
+			}
+			// 移除AmbientLight
+			if (child instanceof AmbientLight) {
+				this.scene.remove(child);
+			}
+			// 移除PointLight
+			if (child instanceof PointLight) {
+				this.scene.remove(child);
+			}
+		});
+
+		// 清除雾效果
+		this.scene.fog = null;
+
+		// 清除背景纹理
+		this.scene.background = null;
+	}
+
+
+	public setTime(timeOfDay: string): void {
+		console.log(timeOfDay);
+		// 清除舊場景效果
+		this.clearEffects();
+		if (timeOfDay == "morning") {
+			this._initSceneOtherEffectsMorning();
+		}
+		else if (timeOfDay == "afternoon") {
+
+		}
+		else if (timeOfDay == "night") {
+			this._initSceneOtherEffectsNight();
+		}
+	}
+
+	private clearWeatherScene(): void {
+		if (this.snowScene) {
+			this.scene.remove(this.snowScene.snowParticles);
+			this.snowScene = undefined;
+			     // Remove all snow particles from the scene
+				//  this.snowScene.snowParticles.geometry.dispose();
+				//  this.snowScene.snowParticles.material.dispose();
+				//  this.scene.remove(this.snowScene.snowParticles);
+				//  this.snowScene = null;
+		}
+		if (this.rainScene) {
+			this.scene.remove(this.rainScene.rainParticles);
+			this.rainScene = undefined;
+		}
+	}
+
+	public setWeather(weather: string): void {
+		// 先清除旧的天气效果
+		this.clearWeatherScene();
+		// 设置天气
+		if (weather === "sunny") {
+			this.weather = weather;
+		}
+		else if (weather === "rainy") {
+			this.weather = weather;
+			this.rainScene = new RainScene(this.scene);
+		}
+		else if (weather === "snowy") {
+			console.log("set snow");
+			this.weather = weather;
+			this.snowScene = new SnowScene(this.scene);
+		}
+	}
+
+
+
+	public update(): void {
+		// 更新場景其他部分
+
+		// 更新下雪場景
+		if (this.snowScene && this.weather === "snowy") {
+			this.snowScene.updateSnow();
+		}
+
+		// 更新水面效果
+		if (this.rainScene && this.weather === "rainy") {
+			this.rainScene.updateRain();
+		}
 	}
 }

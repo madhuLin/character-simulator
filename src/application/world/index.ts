@@ -86,7 +86,7 @@ export default class World {
 			emitter: this.emitter
 		});
 
-
+		
 		
 	}
 
@@ -95,6 +95,7 @@ export default class World {
 		if (this.environment.is_load_finished && this.environment.colliders) {
 			this.character.update(delta, this.environment.colliders as Mesh[]);
 			this.ray_caster_controls.updateTooltipRayCast(this.environment.raycast_objects);
+			this.environment.update();
 		}
 
 		// 需等待场景及人物加载完毕后更新交互探测，避免初始加载时多余的性能消耗

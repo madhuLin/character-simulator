@@ -44,7 +44,7 @@ export const PLAZA_FLOOR_SCENE_URL = new URL("../assets/img/WoodFloor_2K.jpg", i
 export const PLAZA_UFO_SCENE_URL = new URL("../assets/models/low_poly_ufo.glb", import.meta.url).href;
 export const PLAZA_DESERT_SCENE_URL = new URL("../assets/models/low_poly_desert.glb", import.meta.url).href;
 export const PLAZA_CITY_SCENE_URL = new URL("../assets/models/low_poly_city.glb", import.meta.url).href;
-
+export const PLAZA_EFFECT_SCENE_URL = new URL("../assets/img/smoke.png", import.meta.url).href;
 
 
 export const ON_CLICK_RAY_CAST = "on-click-ray-cast";

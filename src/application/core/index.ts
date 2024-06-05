@@ -29,7 +29,6 @@ export default class Core {
 		this.controls.enablePan = false;
 
 
-
 		this._initScene();
 		this._initCamera();
 		this._initRenderer();
@@ -97,5 +96,5 @@ export default class Core {
 		});
 	}
 
-	private 
+
 }

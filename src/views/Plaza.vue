@@ -155,6 +155,7 @@ const onLoadProgress = ([{ url, loaded, total }]: [{ url: string, loaded: number
 
 const onJumpScene = () => {
     // TODO: 跳转场景逻辑
+    // console.log("jump scene");
     router.push("/entertainment");
 };
 
@@ -176,6 +177,7 @@ const onEnterApp = () => {
 };
 
 onMounted(() => {
+    console.log("mounted");
     core = new Core("Plaza");
     core.render();
 

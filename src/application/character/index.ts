@@ -1,5 +1,8 @@
-import { Scene, PerspectiveCamera, AnimationAction, AnimationMixer, Box3, Line3, Matrix4, Mesh, Group, Object3D, Quaternion, Raycaster, Vector3, BoxGeometry, MeshBasicMaterial } from "three";
-import { CHARACTER_IDLE_ACTION_URL, CHARACTER_JUMP_ACTION_URL, CHARACTER_URL, CHARACTER_WALK_ACTION_URL, ON_KEY_DOWN } from "@/application/Constants";
+import { Scene, PerspectiveCamera, AnimationAction, AnimationMixer, 
+	Box3, Line3, Matrix4, Mesh, Group, Object3D, Quaternion, Raycaster, 
+	Vector3, BoxGeometry, MeshBasicMaterial } from "three";
+import { CHARACTER_IDLE_ACTION_URL, CHARACTER_JUMP_ACTION_URL, CHARACTER_URL,
+	 CHARACTER_WALK_ACTION_URL, ON_KEY_DOWN, CHARACTER_URL1, CHARACTER_URL2, ON_IN_PORTAL  } from "@/application/Constants";
 import { isBVHGeometry, isMesh } from "../utils/typeAssert";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Control from "../control";
@@ -23,7 +26,9 @@ type PlayerParams = {
 	controls: OrbitControls | PointerLockControls,
 	control: Control,
 	loader: Loader,
-	emitter: Emitter
+	emitter: Emitter,
+	mode: String,
+	portalPosition: Vector3,
 } & OptionalParams
 
 type Actions = "idle" | "walk" | "jump";
@@ -31,7 +36,9 @@ type Actions = "idle" | "walk" | "jump";
 // 可选配置项默认值
 const default_params: OptionalParams = {
 	is_first_person: false,
-	reset_position: new Vector3(-10, 2.5, 10),
+	// reset_position: new Vector3(-10, 2.5, 10),
+	reset_position: new Vector3(0, 3, 0),
+
 	// reset_position: new Vector3(0, 5, 0),
 
 	reset_y: -25,
@@ -85,6 +92,9 @@ export default class Character {
 	private temp_box = new Box3();
 	private temp_mat = new Matrix4();
 	private temp_segment = new Line3();
+	private portalPosition: Vector3 | undefined;
+	private mode: String;
+	private isCharacterInCircle: boolean = false;
 
 	constructor(params: PlayerParams) {
 		params = {
@@ -92,6 +102,7 @@ export default class Character {
 			...params
 		};
 		console.log("Character");
+		// console.log("params.portalPosition",params.portalPosition);
 		this.scene = params.scene;
 		this.camera = params.camera;
 		this.controls = params.controls as OrbitControls;
@@ -107,8 +118,11 @@ export default class Character {
 		this.gravity = params.gravity!;
 		this.jump_height = params.jump_height!;
 		this.speed = params.speed!;
+		this.mode = params.mode!;
+		this.portalPosition = params.portalPosition!;
 
 		this._createCharacter();
+		console.log("Character created:", this.mode);
 
 		this.emitter.$on(ON_KEY_DOWN, this._onKeyDown.bind(this));
 	}
@@ -132,19 +146,81 @@ export default class Character {
 		this._checkCameraCollision(scene_colliders);
 
 		this._checkReset();
+
+		if(this.mode === "Entertainment") this._enterCircle();
 	}
+
+	//計算距離 檢查是否在傳送點範圍內
+	_checkCharacterInRange(): boolean {
+		if(!this.portalPosition) return false;
+		const distance = this.character.position.clone().sub(this.portalPosition!.clone()).length();
+		// console.log(this.mode);
+		return distance <= 1.6;
+	}
+
+	//傳送
+	private _enterCircle() {
+        if (this._checkCharacterInRange()) {
+            this.isCharacterInCircle = true;
+            // 開始計時3秒鐘
+            const teleportTimeout = setTimeout(() => {
+                if (this.isCharacterInCircle) {
+                    this.teleportCharacter();
+					clearTimeout(teleportTimeout);
+                }
+            }, 3000);
+        }
+		else {
+			this.isCharacterInCircle = false;
+		}
+    }
+
+	//傳送邏輯
+    teleportCharacter() {
+        if (this.character) {
+            // 傳送邏輯實現
+            console.log(`${this.character.name} has been teleported!`);
+			this.isCharacterInCircle = false;
+            this.emitter.$emit(ON_IN_PORTAL);
+        }
+    }
 
 	/*
 	* 添加角色模型&人物动画
 	* */
 	private async _createCharacter() {
 		const model = (await this.loader.gltf_loader.loadAsync(CHARACTER_URL)).scene;
+		// const model1 = (await this.loader.gltf_loader.loadAsync(CHARACTER_URL1)).scene;
+		// const model2 = (await this.loader.gltf_loader.loadAsync(CHARACTER_URL2)).scene;
 		const walk = (await this.loader.fbx_loader.loadAsync(CHARACTER_WALK_ACTION_URL)).animations[0];
 		const idle = (await this.loader.fbx_loader.loadAsync(CHARACTER_IDLE_ACTION_URL)).animations[0];
 		const jump = (await this.loader.fbx_loader.loadAsync(CHARACTER_JUMP_ACTION_URL)).animations[0];
+		
+		
+		
 		this.character = model;
+		// console.log(model.children);
+		// console.log(this.character.children);
+		// const scale = 0.6;
+		const scale = 0.1;
 
-		this.character.scale.set(0.1, 0.1, 0.1);
+		this.character.scale.set(scale, scale, scale);
+		// this.character.position.set(0, -5, 0);
+
+		
+		// 確保骨架與模型同步縮放
+		// 遍歷模型的所有子對象
+		// this.character.traverse((child) => {
+		// 	child.scale.set(scale, scale, scale); // 縮放模型
+		// 	// // 檢查是否是 Mesh
+		// 	// if ((child as THREE.Mesh).isMesh) {
+		// 	// (child as THREE.Mesh).castShadow = true; // 設置影子投射
+		// 	// }
+		// 	// // 檢查是否是 Bone
+		// 	// if ((child as THREE.Bone).isBone) {
+		// 	// (child as THREE.Bone).scale.set(0.2, 0.2, 0.2); // 縮放骨架
+		// 	// }
+		// });
 
 		this.character.animations = [walk, idle, jump];
 		this.mixer = new AnimationMixer(this.character);
@@ -182,7 +258,8 @@ export default class Character {
 			})
 		);
 
-		this.character_shape.visible = false;
+		// this.character_shape.visible = false;
+		this.character_shape.visible = true;
 
 		this.scene.add(this.character_shape);
 	}
@@ -193,6 +270,7 @@ export default class Character {
 	private _updateCharacterShape() {
 		if (this.character_shape && this.character) {
 			this.character_shape.position.copy(this.character.position.clone());
+			// console.log(this.character.position);
 			this.character_shape.translateY(-0.5);
 		}
 	}

@@ -3,11 +3,15 @@ import * as THREE from 'three';
 export class RainScene {
   private scene: THREE.Scene;
   public rainParticles: THREE.Points;
-
+  private flash: THREE.PointLight;
   constructor(scene: THREE.Scene) {
     this.scene = scene;
     this.rainParticles = this.createRain();
     this.scene.add(this.rainParticles);
+
+    this.flash = new THREE.PointLight(0x062d89, 30, 500 ,1.7);
+    this.flash.position.set(200,300,100);
+    scene.add(this.flash);
   }
 
   // private createRaindropTexture(): THREE.CanvasTexture {
@@ -83,13 +87,22 @@ export class RainScene {
     // Add your rain update logic here
     const positions = this.rainParticles.geometry.attributes.position.array as Float32Array;
     const particleCount = positions.length / 3;
-
     for (let i = 0; i < particleCount; i++) {
       positions[i * 3 + 1] -= 1; // Rainfall speed
 
       if (positions[i * 3 + 1] < -1000) {
         positions[i * 3 + 1] = 1000;
       }
+    }
+
+    if(Math.random() > 0.93 || this.flash.power > 100) {
+      if(this.flash.power < 100) 
+        this.flash.position.set(
+          Math.random()*400,
+          300 + Math.random() *200,
+          100
+        );
+        this.flash.power = 50 + Math.random() * 500;
     }
 
     this.rainParticles.geometry.attributes.position.needsUpdate = true;

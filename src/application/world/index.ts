@@ -3,13 +3,14 @@ import Character from "../character";
 import Character2 from "../character/index2";
 import InteractionDetection from "../interactionDetection";
 import Audio from "../audio";
-import { PerspectiveCamera, Scene, Mesh } from "three";
+import { PerspectiveCamera, Scene, Mesh, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Control from "../control";
 import Loader from "../loader";
 import Emitter from "../emitter";
 import { PointerLockControls } from "three-stdlib";
 import RayCasterControls from "../rayCasterControls";
+import {portalPositions} from "../Constants";
 
 interface WorldParams {
 	scene: Scene;
@@ -59,7 +60,9 @@ export default class World {
 			mode: this.mode,
 		});
 		console.log("mode", mode, this.mode);
-
+		let portalPosition: Vector3 | undefined;
+		if (mode === "Entertainment") portalPosition = new Vector3(...portalPositions[0]);
+		
 		this.character = new Character({
 			scene: this.scene,
 			camera: this.camera,
@@ -67,6 +70,8 @@ export default class World {
 			control: this.control,
 			loader: this.loader,
 			emitter: this.emitter,
+			mode: this.mode,
+			portalPosition: portalPosition!,
 		});
 
 
@@ -95,7 +100,7 @@ export default class World {
 		if (this.environment.is_load_finished && this.environment.colliders) {
 			this.character.update(delta, this.environment.colliders as Mesh[]);
 			this.ray_caster_controls.updateTooltipRayCast(this.environment.raycast_objects);
-			this.environment.update();
+			this.environment.update(delta);
 		}
 
 		// 需等待场景及人物加载完毕后更新交互探测，避免初始加载时多余的性能消耗

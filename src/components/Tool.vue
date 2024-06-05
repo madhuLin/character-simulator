@@ -7,18 +7,18 @@
         <h3 class="text-slate-900 dark:text-white mb-2 text-base font-medium tracking-tight">選擇時間</h3>
         <div class="flex space-x-4">
           <button @click="selectTimeOfDay('morning')" class="flex-1 p-2 bg-blue-100 rounded shadow" :class="{ 'bg-blue-400': selectedTimeOfDay === 'morning' }">
-            <img src="@/assets/vue/sunny.png" alt="白天" class="mx-auto w-24 h-24">
+            <img src="@/assets/vue/morning.png" alt="白天" class="mx-auto w-24 h-24">
           </button>
           <button @click="selectTimeOfDay('afternoon')" class="flex-1 p-2 bg-blue-100 rounded shadow" :class="{ 'bg-blue-400': selectedTimeOfDay === 'afternoon' }" >
-            <img src="@/assets/vue/rainy.png" alt="黃昏" class="mx-auto w-24 h-24">
+            <img src="@/assets/vue/afternoon.png" alt="黃昏" class="mx-auto w-24 h-24">
           </button>
           <button @click="selectTimeOfDay('night')" class="flex-1 p-2 bg-blue-100 rounded shadow" :class="{ 'bg-blue-400': selectedTimeOfDay === 'night' }">
-            <img src="@/assets/vue/snowy.png" alt="晚上" class="mx-auto w-24 h-24">
+            <img src="@/assets/vue/night.png" alt="晚上" class="mx-auto w-24 h-24">
           </button>
         </div>
       </div>
       <!-- 天氣選擇 -->
-      <div class="bg-white dark:bg-slate-800 rounded-lg px-6 py-8 ring-1 ring-slate-900/5 shadow-xl mb-4">
+      <div class="bg-white dark:bg-slate-800 rounded-lg px-6 py-4 ring-1 ring-slate-900/5 shadow-xl mb-4">
         <h3 class="text-slate-900 dark:text-white mb-2 text-base font-medium tracking-tight">選擇天氣</h3>
         <div class="flex space-x-4">
           <button @click="selectWeather('sunny')" class="flex-1 p-2 bg-green-100 rounded shadow" :class="{ 'bg-green-400': selectedTimeOfDay === 'sunny' }">

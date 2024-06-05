@@ -24,7 +24,9 @@ import { MeshBVH, StaticGeometryGenerator, type MeshBVHOptions } from "three-mes
 import Emitter from "../emitter";
 import { SnowScene } from "./snowscene";
 import { RainScene } from "./rainscene";
+//@ts-ignore
 import portalVertexShader from '../../assets/shaders/portal/vertex.glsl?raw';
+//@ts-ignore
 import portalFragmentShader from '../../assets/shaders/portal/fragment.glsl?raw';
 import { TeleporterManager } from "./teleoirter";
 

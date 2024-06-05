@@ -98,6 +98,7 @@ export default class World {
 	update(delta: number) {
 		// 需等待场景加载完毕后更新character，避免初始加载时多余的性能消耗和人物碰撞错误处理
 		if (this.environment.is_load_finished && this.environment.colliders) {
+			//@ts-ignore
 			this.character.update(delta, this.environment.colliders as Mesh[]);
 			this.ray_caster_controls.updateTooltipRayCast(this.environment.raycast_objects);
 			this.environment.update(delta);

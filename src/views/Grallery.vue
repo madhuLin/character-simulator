@@ -7,7 +7,7 @@
 
     <load-progress v-model="percentage" :text="loading_text" @on-enter="onEnterApp" />
 
-    <Tool v-if="isToolVisible" :sceneValue="sceneValue" @effetParams="handleToolCompleted"
+    <Tool v-if="isToolVisible" @effetParams="handleToolCompleted"
         @close="() => isToolVisible = false"></Tool>
 
     <PreviewTooltip ref="c1" />
@@ -50,37 +50,17 @@ const showToolTip = (eventData: any) =>{
 };
 
 
-interface SceneValue {
-    timeOfDay: string;
-    weather: string;
-    character: string;
-}
-
-
-//創建初始 sceneValue 值
-let sceneValue = reactive<SceneValue>({
-    timeOfDay: "morning",
-    weather: "sunny",
-    character: "boy"
-});
-
 // 工具攔截按键事件
 const isToolVisible = ref<boolean>(false);
 
-const toggleToolVisibility = (event: KeyboardEvent) => {
-    if (event.key === 'Tab') {
+const toggleToolVisibility = () => {
         isToolVisible.value = !isToolVisible.value;
-        event.preventDefault(); // 防止 Tab 鍵的默認行為
-    }
+        // event.preventDefault(); // 防止 Tab 鍵的默認行為
 };
 
 // 定義工具攔事件處理方法
 const handleToolCompleted = (value: { timeOfDay: string, weather: string, character: string }) => {
     isToolVisible.value = false;
-    console.log(value);
-    sceneValue.timeOfDay = value.timeOfDay;
-    sceneValue.weather = value.weather;
-    sceneValue.character = value.character;
     if (value.timeOfDay == "morning") {
         core!.world.environment.setTime("morning");
     }
@@ -123,10 +103,15 @@ const onIntersectTriggerStop = () => {
 };
 
 const onKeyDown = ([key]: [key: string]) => {
-    if (key === "KeyF" && core) {
-        const intersect = core.world.interaction_detection.getIntersectObj();
-        if (intersect) {
-            handleInteraction(intersect);
+    if (core) {
+        if(key === "KeyF") {
+            const intersect = core.world.interaction_detection.getIntersectObj();
+            if (intersect) {
+                handleInteraction(intersect);
+            }
+        }
+        if(key === "KeyT") {
+            toggleToolVisibility();
         }
     }
 };
@@ -210,11 +195,11 @@ onMounted(() => {
     core.emitter.$on(ON_CLICK_RAY_CAST, mouseClickHandler);
     core.emitter.$on(ON_SHOW_TOOLTIP, showToolTip);
     core.emitter.$on(ON_HIDE_TOOLTIP, c1.value?.hidePreviewTooltip);
-    window.addEventListener('keydown', toggleToolVisibility);
+    // window.addEventListener('keydown', toggleToolVisibility);
 });
 
 onBeforeUnmount(() => {
-    window.removeEventListener('keydown', toggleToolVisibility);
+    // window.removeEventListener('keydown', toggleToolVisibility);
     // core.emitter.$off(ON_CLICK_RAY_CAST, mouseClickHandler);
 });
 </script>

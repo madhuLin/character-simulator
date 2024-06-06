@@ -82,9 +82,10 @@ export default class Environment {
 	}: EnvironmentParams) {
 		this.scene = scene;
 		this.loader = loader;
-		this.emitter = emitter; 
+		this.emitter = emitter;
 		this.mode = mode; //模式
 		this.portalPosition = portalPosition; //傳送門位置
+		this.clearEffects();
 		if (this.mode === "Plaza") {
 			console.log("Plaza");
 			this._loadEnvironment(PLAZA_CITY_SCENE_URL);
@@ -92,7 +93,7 @@ export default class Environment {
 		else if (this.mode === "Entertainment") {
 			this._loadEntertainmentEnvironment(COLLISION_SCENE_URL);
 			this.createPortal();
-			
+
 		}
 		else if (this.mode === "Grallery") {
 			this._loadGralleryEnvironment();
@@ -187,7 +188,7 @@ export default class Environment {
 				describe: BOARDS_INFO[key].describe,
 				index: key,
 				src: this.texture_boards[key].image.src,
-				tips:"Tips：點擊此畫可查看詳情"
+				tips: "Tips：點擊此畫可查看詳情"
 			};
 
 			// 翻轉貼圖
@@ -262,8 +263,8 @@ export default class Environment {
 		const teleporter = this.teleporterManager.teleporter;
 		if (teleporter) {
 			// 添加碰撞體
-			const geometry = new BoxGeometry(0.7,4,0.7); // 使用盒子碰撞體作為示例
-			const material = new MeshBasicMaterial({visible: false}); // 使碰撞體不可見  
+			const geometry = new BoxGeometry(0.7, 4, 0.7); // 使用盒子碰撞體作為示例
+			const material = new MeshBasicMaterial({ visible: false }); // 使碰撞體不可見  
 			const collider = new Mesh(geometry, material);
 			teleporter.add(collider); // 將碰撞體添加為傳送門的子物件
 			collider.userData.hint = true;

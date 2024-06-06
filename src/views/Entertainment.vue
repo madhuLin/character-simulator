@@ -7,8 +7,8 @@
 
     <load-progress v-model="percentage" :text="loading_text" @on-enter="onEnterApp" />
 
-    <!-- <Tool v-if="isToolVisible" :sceneValue="sceneValue" @effetParams="handleToolCompleted"
-        @close="() => isToolVisible = false"></Tool> -->
+    <Tool v-if="isToolVisible" @effetParams="handleToolCompleted"
+        @close="() => isToolVisible = false"></Tool>
         <PreviewTooltip ref="c1" />
 </template>
 
@@ -34,24 +34,47 @@ const showToolTip = (eventData: any) =>{
     eventData = eventData[0];
     c1.value?.showPreviewTooltip(eventData.msg, eventData.tips);
 };
-// import Tool from "@/components/Tool.vue";
+import Tool from "@/components/Tool.vue";
 
-// interface SceneValue {
-//     timeOfDay: string;
-//     weather: string;
-//     character: string;
-// }
 
-// // 工具相关
-// const isToolVisible = ref<boolean>(false);
 
-// const toggleToolVisibility = (event: KeyboardEvent) => {
-//     if (event.key === 'Tab') {
-//         isToolVisible.value = !isToolVisible.value;
-//         event.preventDefault(); // 防止 Tab 鍵的默認行為
-//     }
-// };
-// 加载相关
+// 工具相關
+const isToolVisible = ref<boolean>(false);
+
+const toggleToolVisibility = () => {
+        isToolVisible.value = !isToolVisible.value;
+        // event.preventDefault(); // 防止 Tab 鍵的默認行為
+};
+
+// 工具攔截按键事件
+const handleToolCompleted = (value: { timeOfDay: string, weather: string, character: string }) => {
+    isToolVisible.value = false;
+    console.log(value);
+    // sceneValue.timeOfDay = value.timeOfDay;
+    // sceneValue.weather = value.weather;
+    // sceneValue.character = value.character;
+    if (value.timeOfDay == "morning") {
+        core!.world.environment.setTime("morning");
+    }
+    else if (value.timeOfDay == "afternoon") {
+        core!.world.environment.setTime("afternoon");
+    }
+    else if (value.timeOfDay == "night") {
+        core!.world.environment.setTime("night");
+    }
+
+    if (value.weather == "sunny") {
+        core!.world.environment.setWeather("sunny");
+    }
+    else if (value.weather == "rainy") {
+        core!.world.environment.setWeather("rainy");
+    }
+    else if (value.weather == "snowy") {
+        core!.world.environment.setWeather("snowy");
+    }
+};
+
+// 加載相關
 const percentage = ref(0);
 const loading_text = ref("加载中...");
 
@@ -65,18 +88,25 @@ const onIntersectTrigger = ([user_data]: [user_date: InteractionMesh["userData"]
 };
 
 /*
-* 结束场景交互提示时
+* 結束場景交互提示
 * */
 const onIntersectTriggerStop = () => {
     notify_ref.value!.closeNotify();
 };
 
+//鍵盤事件
 const onKeyDown = ([key]: [key: string]) => {
-    if (key === "KeyF" && core) {
-        const intersect = core.world.interaction_detection.getIntersectObj();
-        if (intersect) {
-            handleInteraction(intersect);
+    if (core) {
+        if(key === "KeyF") {
+            const intersect = core.world.interaction_detection.getIntersectObj();
+            if (intersect) {
+                handleInteraction(intersect);
+            }
         }
+        if(key === "KeyT") {
+            toggleToolVisibility();
+        }
+        
     }
 };
 
@@ -156,6 +186,7 @@ onMounted(() => {
     core.emitter.$on(ON_IN_PORTAL, onJumpScene);
     core.emitter.$on(ON_SHOW_TOOLTIP, showToolTip);
     core.emitter.$on(ON_HIDE_TOOLTIP, c1.value?.hidePreviewTooltip);
+    
 });
 </script>
 

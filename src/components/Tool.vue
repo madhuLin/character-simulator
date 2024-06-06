@@ -61,25 +61,28 @@
 
 <script setup>
 import { ref, reactive, onMounted, toRefs} from 'vue';
-// 接收父组件传递的 sceneValue
-const props = defineProps({sceneValue: Object});
+// // 接收父组件传递的 sceneValue
+// const props = defineProps({sceneValue: Object});
 
-// 在子组件中使用 props.sceneValue
-const sceneValue = toRefs(props.sceneValue);
+// // 在子组件中使用 props.sceneValue
+// const sceneValue = toRefs(props.sceneValue);
 
+// timeOfDay: "morning",
+//     weather: "sunny",
+//     character: "boy"
 
-const selectedWeather = ref('');
-const selectedCharacter = ref('');
-const selectedTimeOfDay = ref('');
+const selectedWeather = ref('morning');
+const selectedCharacter = ref('sunny');
+const selectedTimeOfDay = ref('boy');
 const selectWeather = (weather) => {
   selectedWeather.value = weather;
 };
 
 onMounted(() => {
   // 將 props.sceneValue 的值更新到本地 state 中
-  selectCharacter.value = sceneValue.character.value;
-  selectWeather.value = sceneValue.weather.value;
-  selectTimeOfDay.value = sceneValue.timeOfDay.value;
+  // selectCharacter.value = sceneValue.character.value;
+  // selectWeather.value = sceneValue.weather.value;
+  // selectTimeOfDay.value = sceneValue.timeOfDay.value;
 });
 
 const selectCharacter = (character) => {

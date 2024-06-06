@@ -1,7 +1,7 @@
 import {ON_KEY_DOWN, ON_KEY_UP} from "../Constants";
 import Emitter from "../emitter";
 
-type Keys = "KeyW" | "KeyS" | "KeyA" | "KeyD" | "KeyV" | "KeyF" | "Space";
+type Keys = "KeyW" | "KeyS" | "KeyA" | "KeyD" | "KeyV" | "KeyF" | "Space" | "KeyT";
 
 type KeySets = Keys[]
 
@@ -23,10 +23,11 @@ export default class Control {
 		"KeyD": false,
 		"KeyV": false,
 		"KeyF": false,
-		"Space": false
+		"Space": false,
+		"KeyT" : false,
 	};
 	private is_enabled =  false;
-	private key_sets: KeySets = ["KeyW", "KeyS", "KeyA", "KeyD", "KeyV", "KeyF", "Space"];
+	private key_sets: KeySets = ["KeyW", "KeyS", "KeyA", "KeyD", "KeyV", "KeyF", "Space", "KeyT"];
 	private readonly handleKeyDown: OmitThisParameter<(event: KeyboardEvent) => void>;
 	private readonly handleKeyUp: OmitThisParameter<(event: KeyboardEvent) => void>;
 

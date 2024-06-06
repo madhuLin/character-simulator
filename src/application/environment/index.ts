@@ -1,15 +1,23 @@
 import Loader from "../loader";
 import {
+	// Entertainment
 	COLLISION_SCENE_URL, ON_LOAD_SCENE_FINISH, SCENE_BACKGROUND_TEXTURE, WATER_NORMAL1_TEXTURE,
-	WATER_NORMAL2_TEXTURE, PLAZA_COLLISION_SCENE_URL, PLAZA_FLOOR_SCENE_URL, PLAZA_UFO_SCENE_URL,
-	PLAZA_DESERT_SCENE_URL, PLAZA_CITY_SCENE_URL, PLAZA_EFFECT_SCENE_URL, SCENE_BACKGROUND1_TEXTURE,
-	PORTAL_PERLINNOISE_TEXTURE, PORTAL_SPARKNOISE_TEXTURE, PORTAL_WATERURBURBULENCE_TEXTURE, PORTAL_NOISE_TEXTURE,
-	PORTAL_MAGIC_TEXTURE, PORTAL_AROUND_TEXTURE
+	WATER_NORMAL2_TEXTURE,
+	// Plaza
+	PLAZA_CITY_SCENE_URL, PLAZA_EFFECT_SCENE_URL,
+	// 傳送門 雨 雪
+	SCENE_BACKGROUND1_TEXTURE, PORTAL_PERLINNOISE_TEXTURE, PORTAL_SPARKNOISE_TEXTURE,
+	PORTAL_WATERURBURBULENCE_TEXTURE, PORTAL_NOISE_TEXTURE,
+	// graallery
+	GALLETY_SCENE_URL, STATIC_SCENE_URL, BOARD_TEXTURES, BOARDS_INFO,
 } from "../Constants";
 import {
 	Scene, AmbientLight, DirectionalLight, EquirectangularReflectionMapping, Fog, Group, HemisphereLight,
 	Mesh, PlaneGeometry, Vector2, MeshBasicMaterial, DoubleSide, Object3D, MeshLambertMaterial, PointLight,
-	ShaderMaterial, Vector3, CircleGeometry,BufferGeometry, BufferAttribute
+	ShaderMaterial, Vector3, CircleGeometry, BufferGeometry, BufferAttribute, Texture,
+
+	//graallery
+	SRGBColorSpace, Material, BoxGeometry
 } from "three";
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
@@ -20,6 +28,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 
 import { Water } from "three/examples/jsm/objects/Water2";
 import type { BVHGeometry } from "../utils/typeAssert";
+import { isLight, isMesh } from "../utils/typeAssert";
 import { MeshBVH, StaticGeometryGenerator, type MeshBVHOptions } from "three-mesh-bvh";
 import Emitter from "../emitter";
 import { SnowScene } from "./snowscene";
@@ -30,6 +39,8 @@ import portalVertexShader from '../../assets/shaders/portal/vertex.glsl?raw';
 import portalFragmentShader from '../../assets/shaders/portal/fragment.glsl?raw';
 import { TeleporterManager } from "./teleoirter";
 
+//grallery
+import { Reflector } from "../lib/Reflector";
 
 
 interface EnvironmentParams {
@@ -37,6 +48,7 @@ interface EnvironmentParams {
 	loader: Loader;
 	emitter: Emitter;
 	mode: string;
+	portalPosition: Vector3;
 }
 
 export default class Environment {
@@ -48,41 +60,167 @@ export default class Environment {
 	private collision_scene: Group | undefined;
 	colliders: Mesh[] = [];
 	is_load_finished = false;
-	raycast_objects: Object3D[] = [];
-
+	raycast_objects: Object3D[] = [];  // 物件可被射線追蹤
+	//tool common effects
 	snowScene: SnowScene | undefined;
 	rainScene: RainScene | undefined;
 	cloudParticles: Mesh[] = [];
 	private weather: string = "sunny";
 	private portalMaterial: ShaderMaterial | undefined;
 	private teleporterManager: TeleporterManager | undefined;
-
+	private portalPosition: Vector3; //傳送門位置
+	//grallery
+	private texture_boards: Record<string, Texture> = {};
+	private gallery_boards: Record<string, Mesh> = {};
+	private scaleGrallery = 0.3; //grallery 縮放比例
 	constructor({
 		scene,
 		loader,
 		emitter,
 		mode,
+		portalPosition
 	}: EnvironmentParams) {
 		this.scene = scene;
 		this.loader = loader;
-		this.emitter = emitter;
-		this.mode = mode;
-
+		this.emitter = emitter; 
+		this.mode = mode; //模式
+		this.portalPosition = portalPosition; //傳送門位置
 		if (this.mode === "Plaza") {
 			console.log("Plaza");
 			this._loadEnvironment(PLAZA_CITY_SCENE_URL);
 		}
 		else if (this.mode === "Entertainment") {
 			this._loadEntertainmentEnvironment(COLLISION_SCENE_URL);
-			this.teleporterManager = new TeleporterManager(this.scene, new Vector3(-1.4,0.05,16));
+			this.createPortal();
+			
 		}
+		else if (this.mode === "Grallery") {
+			this._loadGralleryEnvironment();
+			this.createPortal();
+		}
+
 
 	}
 
+	private async _loadGralleryEnvironment() {
+		try {
+			await this._loadCollisionScene(GALLETY_SCENE_URL);
+			await this._loadStaticScene();
+			await this._loadBoardsTexture();
+			this._configureGallery();
+			this._createSpecularReflection();
+			this.is_load_finished = true;
+			this.emitter.$emit(ON_LOAD_SCENE_FINISH);
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
+	/*
+	* 載入grallery環境不含碰撞其他的場景
+	* */
+	private async _loadStaticScene(): Promise<void> {
+		return new Promise(resolve => {
+			this.loader.gltf_loader.load(STATIC_SCENE_URL, (gltf) => {
+				//統一大小
+				gltf.scene.scale.set(this.scaleGrallery, this.scaleGrallery, this.scaleGrallery);
+
+				this.scene.add(gltf.scene);
+				gltf.scene.traverse(item => {
+					if (item.name === "computer") {
+						item.userData = {
+							hint: true,
+							name: item.name,
+							title: "噢，是遠方 🏕",
+						};
+						this.raycast_objects.push(item);
+					}
+				});
+				resolve();
+			});
+		});
+	}
+
+
+	private async _loadBoardsTexture(): Promise<void> {
+		for (let i = 0; i < BOARD_TEXTURES.length; i++) {
+			this.texture_boards[i + 1] = await this.loader.texture_loader.loadAsync(BOARD_TEXTURES[i]);
+		}
+
+		for (const key in this.texture_boards) {
+			const texture = this.texture_boards[key]
+			texture.colorSpace = SRGBColorSpace;
+
+			// 根據紋理的寬高比和平面的寬高比，計算所需的縮放比例
+			const texture_aspect_ratio = texture.image.width / texture.image.height;
+			let scale_x = 1;
+			let scale_y = 1;
+
+			if (texture_aspect_ratio > 1) {
+				scale_x = 1 / texture_aspect_ratio;
+			} else {
+				scale_y = texture_aspect_ratio;
+			}
+
+			// 設定紋理的偏移和重複以進行居中和適應
+			texture.offset.set(0.5 - scale_x / 2, 0.5 - scale_y / 2);
+			texture.repeat.set(scale_x, scale_y);
+			texture.needsUpdate = true;
+		}
+
+		return Promise.resolve();
+	}
+
+	/*
+	* 設定畫板userData資料、貼圖翻轉
+	* */
+	private _configureGallery() {
+		for (const key in this.texture_boards) {
+			const board = this.gallery_boards[`gallery${key}_board`];
+			const board_material = board.material;
+			(board_material as MeshBasicMaterial).map = this.texture_boards[key];
+			board.userData = {
+				hint: true,
+				name: board.name,
+				title: BOARDS_INFO[key].title,
+				author: BOARDS_INFO[key].author,
+				describe: BOARDS_INFO[key].describe,
+				index: key,
+				src: this.texture_boards[key].image.src,
+				tips:"Tips：點擊此畫可查看詳情"
+			};
+
+			// 翻轉貼圖
+			if ([4, 5, 6, 7, 9].includes(+key)) {
+				board.rotation.y = -Math.PI / 2;
+			}
+			if (8 === +key) {
+				board.rotation.y = Math.PI;
+			}
+
+			(board_material as MeshBasicMaterial).needsUpdate = true;
+		}
+	}
+
+	/*
+	* 產生地面鏡面反射
+	* */
+	private _createSpecularReflection() {
+		const mirror = new Reflector(new PlaneGeometry(100, 100), {
+			textureWidth: window.innerWidth * window.devicePixelRatio,
+			textureHeight: window.innerHeight * window.devicePixelRatio,
+			color: 0xffffff,
+		});
+		if (mirror.material instanceof Material) {
+			mirror.material.transparent = true;
+		}
+		mirror.rotation.x = -0.5 * Math.PI;
+		this.scene.add(mirror);
+	}
 
 
 	/*
-* 加载场景全部物体
+* 載入場景全部物體
 * */
 	private async _loadEnvironment(SCENE_URL: string) {
 		try {
@@ -103,14 +241,13 @@ export default class Environment {
 	}
 
 	/*
-* 加载场景全部物体
+* 載入場景全部物體
 * */
 	private async _loadEntertainmentEnvironment(SCENE_URL: string) {
 		try {
 			await this._loadCollisionScene(SCENE_URL);
 			this._initSceneOtherEffectsMorning();
 			// this._initDoor();
-
 
 			this._createWater();
 			this.is_load_finished = true;
@@ -120,8 +257,26 @@ export default class Environment {
 		}
 	}
 
+	private createPortal() {
+		this.teleporterManager = new TeleporterManager(this.scene, this.portalPosition);
+		const teleporter = this.teleporterManager.teleporter;
+		if (teleporter) {
+			// 添加碰撞體
+			const geometry = new BoxGeometry(0.7,4,0.7); // 使用盒子碰撞體作為示例
+			const material = new MeshBasicMaterial({visible: false}); // 使碰撞體不可見  
+			const collider = new Mesh(geometry, material);
+			teleporter.add(collider); // 將碰撞體添加為傳送門的子物件
+			collider.userData.hint = true;
+			collider.userData.tips = "Tips: 在傳送門內三秒即可傳送回廣場!";
+			this.raycast_objects.push(collider); // 將碰撞體添加到射線檢測對象列表中
+			// console.log("createPortal", teleporter);
+		} else {
+			// console.error("Teleporter is null!");
+		}
+	}
+
 	/*
-	* 创建户外水池
+	* 創建戶外池
 	* */
 	private _createWater() {
 		const water = new Water(new PlaneGeometry(8.5, 38, 1024, 1024), {
@@ -193,7 +348,7 @@ export default class Environment {
 
 		const planeGeometry = new PlaneGeometry(2.5, 2.5, 1, 1);
 		const portal = new Mesh(planeGeometry, this.portalMaterial);
-		portal.position.set(19, 0.7, -18);
+		portal.position.copy(this.portalPosition);
 		this.scene.add(portal);
 		portal.userData.mode = "Entertainment";
 		this.raycast_objects.push(portal);
@@ -201,7 +356,7 @@ export default class Environment {
 	}
 
 	// /*
-	// * 加载场景全部物体
+	// * 載入場景全部物體
 	// * */
 	// private async _loadEnvironment() {
 	// 	try {
@@ -217,21 +372,50 @@ export default class Environment {
 
 
 	/*
-	* 加载地图并绑定碰撞
+	* 載入地圖並綁定碰撞
 	* */
-	private _loadCollisionScene(SCENE_URL: string): Promise<void> {
+	private async _loadCollisionScene(SCENE_URL: string): Promise<void> {
 		return new Promise(resolve => {
 			this.loader.gltf_loader.load(SCENE_URL /* PLAZA_UFO_SCENE_URL PLAZA_COLLISION_SCENE_URL COLLISION_SCENE_URL*/, (gltf) => {
 				this.collision_scene = gltf.scene;
+				if (this.mode === "Grallery") {
+
+					this.collision_scene.scale.set(this.scaleGrallery, this.scaleGrallery, this.scaleGrallery);
+					this.collision_scene.traverse(item => {
+						if (item.name === "home001" || item.name === "PointLight") {
+							item.castShadow = true;
+						}
+
+						if (item.name.includes("PointLight") && isLight(item)) {
+							// console.log("PointLight", item.name, item.intensity);
+							item.intensity *= 60;
+						}
+
+						if (item.name === "home002") {
+							item.castShadow = true;
+							item.receiveShadow = true;
+						}
+
+						// 提取出相框元素
+						if (/gallery.*_board/.test(item.name) && isMesh(item)) {
+							this.gallery_boards[item.name] = item;
+						}
+
+						this.raycast_objects.push(item);
+					});
+				}
+				else {
+					this.collision_scene.traverse(item => {
+						// console.log(item);
+						item.castShadow = true;
+						item.receiveShadow = true;
+					});
+				}
 				// this.collision_scene.scale.set(0.01, 0.01, 0.01);
 				// this.collision_scene.position.y -= 40;
 				// this.collision_scene.scale.set(50, 50, 50);			
 
-				this.collision_scene.traverse(item => {
-					// console.log(item);
-					item.castShadow = true;
-					item.receiveShadow = true;
-				});
+
 
 				// this.collision_scene.position.x += 20;
 				this.collision_scene.updateMatrixWorld(true);
@@ -239,7 +423,6 @@ export default class Environment {
 
 				const static_generator = new StaticGeometryGenerator(this.collision_scene);
 				static_generator.attributes = ["position"];
-				console.log(static_generator.attributes);
 				const generate_geometry = static_generator.generate() as BVHGeometry;
 				generate_geometry.boundsTree = new MeshBVH(generate_geometry, { lazyGeneration: false } as MeshBVHOptions);
 
@@ -501,8 +684,8 @@ export default class Environment {
 		// 	}
 		// }
 
-		if(this.mode === "Entertainment") {
-			if(this.teleporterManager) {
+		if (this.mode === "Entertainment") {
+			if (this.teleporterManager) {
 				this.teleporterManager.updateCircles();
 				this.teleporterManager.updateArounds();
 				this.teleporterManager.updatePatical();

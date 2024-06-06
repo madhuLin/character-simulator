@@ -29,7 +29,7 @@ export class TeleporterManager {
     private scene: Scene;
     private circleTexture: Texture;
     private aroundTexture: Texture;
-
+    public teleporter: Object3D | undefined;
     private textureLoader: TextureLoader = new TextureLoader();
     private params: any
     private teleporters: Object3D[] = [];
@@ -140,13 +140,14 @@ export class TeleporterManager {
         teleporter.add(around2);
         this.arounds2.push(around2);
     
-        // for (let j = 0; j < 10; j++) {
-        //     for (let i = 0; i < this.pointTexture.length; i++) {
-        //         let sprite = this.getPoints(this.params.pointRangeRadius, this.params.height, this.pointTexture[i]);
-        //         this.particles.push(sprite);
-        //         teleporter.add(sprite);
-        //     }
-        // }
+        for (let j = 0; j < 10; j++) {
+            for (let i = 0; i < this.pointTexture.length; i++) {
+                let sprite = this.getPoints(this.params.pointRangeRadius, this.params.height, this.pointTexture[i]);
+                this.particles.push(sprite);
+                teleporter.add(sprite);
+            }
+        }
+        this.teleporter = teleporter;
         this.scene.add(teleporter);
     }
 

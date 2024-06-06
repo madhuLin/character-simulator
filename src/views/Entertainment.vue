@@ -9,6 +9,7 @@
 
     <!-- <Tool v-if="isToolVisible" :sceneValue="sceneValue" @effetParams="handleToolCompleted"
         @close="() => isToolVisible = false"></Tool> -->
+        <PreviewTooltip ref="c1" />
 </template>
 
 <script setup lang="ts">
@@ -17,13 +18,22 @@ import NesGameDialog from "@/components/NesGameDialog.vue";
 import NotifyTips from "@/components/NotifyTips.vue";
 import Core from "@/application/core";
 import { onMounted, ref } from "vue";
-import { ON_INTERSECT_TRIGGER, ON_INTERSECT_TRIGGER_STOP, ON_KEY_DOWN, ON_LOAD_PROGRESS, ON_IN_PORTAL } from "@/application/Constants";
+import { ON_INTERSECT_TRIGGER, ON_INTERSECT_TRIGGER_STOP, ON_KEY_DOWN, ON_LOAD_PROGRESS, 
+    ON_IN_PORTAL, ON_SHOW_TOOLTIP, ON_HIDE_TOOLTIP } from "@/application/Constants";
 import type { InteractionMesh } from "@/application/interactionDetection/types";
 import { PointerLockControls } from "three-stdlib";
 const notify_ref = ref<InstanceType<typeof NotifyTips>>();
 const game_dialog_ref = ref<InstanceType<typeof NesGameDialog>>();
 
 import router from "@/router";
+
+import PreviewTooltip from '@/components/PreviewTooltip.vue';
+// 引用子组件
+const c1 = ref();
+const showToolTip = (eventData: any) =>{
+    eventData = eventData[0];
+    c1.value?.showPreviewTooltip(eventData.msg, eventData.tips);
+};
 // import Tool from "@/components/Tool.vue";
 
 // interface SceneValue {
@@ -144,6 +154,8 @@ onMounted(() => {
     core.emitter.$on(ON_KEY_DOWN, onKeyDown);
     core.emitter.$on(ON_LOAD_PROGRESS, onLoadProgress);
     core.emitter.$on(ON_IN_PORTAL, onJumpScene);
+    core.emitter.$on(ON_SHOW_TOOLTIP, showToolTip);
+    core.emitter.$on(ON_HIDE_TOOLTIP, c1.value?.hidePreviewTooltip);
 });
 </script>
 

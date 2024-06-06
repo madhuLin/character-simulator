@@ -92,9 +92,9 @@ export default class Character {
 	private temp_box = new Box3();
 	private temp_mat = new Matrix4();
 	private temp_segment = new Line3();
-	private portalPosition: Vector3 | undefined;
-	private mode: String;
-	private isCharacterInCircle: boolean = false;
+	private portalPosition: Vector3 | undefined; // 傳送點位置
+	private mode: String; //哪地圖
+	private isCharacterInCircle: boolean = false; // 是否在傳送點範圍內
 
 	constructor(params: PlayerParams) {
 		params = {
@@ -147,12 +147,11 @@ export default class Character {
 
 		this._checkReset();
 
-		if(this.mode === "Entertainment") this._enterCircle();
+		if(this.mode !== "Plaza") this._enterCircle();
 	}
 
 	//計算距離 檢查是否在傳送點範圍內
 	_checkCharacterInRange(): boolean {
-		if(!this.portalPosition) return false;
 		const distance = this.character.position.clone().sub(this.portalPosition!.clone()).length();
 		// console.log(this.mode);
 		return distance <= 1.6;
@@ -181,6 +180,7 @@ export default class Character {
             // 傳送邏輯實現
             console.log(`${this.character.name} has been teleported!`);
 			this.isCharacterInCircle = false;
+			this.character.position.copy(this.reset_position);
             this.emitter.$emit(ON_IN_PORTAL);
         }
     }

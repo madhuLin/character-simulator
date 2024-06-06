@@ -6,7 +6,7 @@ interface PlayerParams {
 	camera: PerspectiveCamera;
 	emitter: Emitter;
 }
-
+let a = true;
 export default class RayCasterControls {
 	private readonly camera: PerspectiveCamera;
 	private readonly emitter: Emitter;
@@ -20,13 +20,13 @@ export default class RayCasterControls {
 		this.emitter = emitter;
 
 		this.click_raycaster = new Raycaster();
-		// 通过click点击检测距离为18
+		// 透過click點選檢測距離為12
 		// this.click_raycaster.far = 18;
 		this.click_raycaster.far = 8;
 
 		this.tooltip_raycaster = new Raycaster();
-		// tooltip显示检测距离为15
-		this.tooltip_raycaster.far = 5;
+		// tooltip顯示偵測距離為15
+		this.tooltip_raycaster.far = 10;
 
 		this.hover_point = new Vector2(0, 0);
 		this.mouse_point = new Vector2();
@@ -36,8 +36,9 @@ export default class RayCasterControls {
 		if (raycast_objects.length) {
 			this.tooltip_raycaster.setFromCamera(this.hover_point, this.camera);
 			const intersects = this.tooltip_raycaster.intersectObjects(raycast_objects);
-			if (intersects.length && intersects[0].object.userData.title) {
-				this.emitter.$emit(ON_SHOW_TOOLTIP, { msg: intersects[0].object.userData.title, show_preview_tips: !!intersects[0].object.userData.show_boards });
+			if (intersects.length && intersects[0].object.userData.hint) {
+				// console.log("intersects", intersects[0].object.userData.title);
+				this.emitter.$emit(ON_SHOW_TOOLTIP, { msg: intersects[0].object.userData.title, tips:intersects[0].object.userData.tips });
 			} else {
 				this.emitter.$emit(ON_HIDE_TOOLTIP);
 			}
@@ -45,6 +46,7 @@ export default class RayCasterControls {
 	}
 
 	bindClickRayCastObj(raycast_objects: Object3D[] = []) {
+		if(a) console.log("bindClickRayCastObj", raycast_objects), a = false;
 		let down_x = 0;
 		let down_y = 0;
 
@@ -54,7 +56,6 @@ export default class RayCasterControls {
 		});
 
 		document.body.addEventListener("pointerup", (event) => {
-			// console.log("click");
 			const offset_x = Math.abs(event.screenX - down_x);
 			const offset_y = Math.abs(event.screenY - down_y);
 
@@ -67,8 +68,12 @@ export default class RayCasterControls {
 				const intersects = this.click_raycaster.intersectObjects(raycast_objects);
 				if (intersects.length > 0) {
 					// 點擊事件檢測到了物件
-					console.log("點擊事件檢測到了物件", intersects[0].object.userData.mode);
-					console.log(intersects[0].object);
+					// console.log("點擊事件檢測到了物件", intersects[0]);
+					// console.log(intersects[0].object);
+					if(intersects[0].object.userData.show_boards) {
+						this.emitter.$emit(ON_CLICK_RAY_CAST, intersects[0].object.userData);
+					}
+					else if(intersects[0].object.userData.mode === "Entertainment")
 					this.emitter.$emit(ON_CLICK_RAY_CAST, intersects[0].object);
 
 					//  this.emitter.$emit(ON_CLICK_RAY_CAST, intersects[0].object);

@@ -1,13 +1,11 @@
-import { ACESFilmicToneMapping, Clock, Color, PerspectiveCamera, Scene, SRGBColorSpace, VSMShadowMap, WebGLRenderer, AmbientLight, HemisphereLight, DirectionalLight, Mesh, MeshBasicMaterial, PlaneGeometry, PointLight, SpotLight, TextureLoader } from "three";
+import { ACESFilmicToneMapping, Clock, Color, PerspectiveCamera, Scene, SRGBColorSpace, VSMShadowMap, WebGLRenderer } from "three";
 import World from "../world";
 import Emitter from "../emitter";
 import Loader from "../loader";
 import Control from "../control";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { PointerLockControls } from "three-stdlib";
-import { PLAZA_COLLISION_SCENE_URL } from "../Constants"
-
+import UI from "../ui";
 export default class Core {
 	scene: Scene;
 	renderer: WebGLRenderer;
@@ -19,12 +17,16 @@ export default class Core {
 	control: Control;
 	loader: Loader;
 	world: World;
+	ui!: UI;
+	mode: string;
 
-	constructor(mode: String) {
+	constructor(mode: string =  "") {
 		this.scene = new Scene();
-		this.renderer = new WebGLRenderer({antialias: true});
+		this.renderer = new WebGLRenderer({ antialias: true });
 		this.camera = new PerspectiveCamera();
 		this.clock = new Clock();
+		// this.mode = "PointerLockControls";
+		this.mode = mode;
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 		this.controls.enablePan = false;
 
@@ -43,7 +45,6 @@ export default class Core {
 		this.loader = new Loader({
 			emitter: this.emitter
 		});
-
 		this.world = new World({
 			scene: this.scene,
 			camera: this.camera,
@@ -51,35 +52,9 @@ export default class Core {
 			control: this.control,
 			loader: this.loader,
 			emitter: this.emitter,
-			mode: "",
+			mode: this.mode,
 		});
-		
-
 	}
-
-
-
-	/*
-* 加载地图并绑定碰撞
-* */
-	// private _loadCollisionScene(): Promise<void> {
-	// 	console.log('Loading collision scene...');
-	// 	return new Promise(resolve => {
-	// 		const gltf_loader = new GLTFLoader();
-	// 		gltf_loader.load(PLAZA_COLLISION_SCENE_URL, (gltf) => {
-	// 			// 在此處處理加載完成後的邏輯
-	// 			// 你可以在這裡處理加載完成後的場景或模型
-	// 			console.log('Collision scene loaded:', gltf);
-	// 			this.scene.add(gltf.scene);
-	// 			// 當加載完成後，執行 resolve() 以完成 Promise
-	// 			resolve();
-	// 		}, undefined, (error) => {
-	// 			// 在此處處理加載失敗的情況
-	// 			console.error('Error loading collision scene:', error);
-	// 			resolve(); // 雖然加載失敗，但仍然執行 resolve() 以完成 Promise
-	// 		});
-	// 	});
-	// }
 
 	render() {
 		this.renderer.setAnimationLoop(() => {
@@ -101,10 +76,9 @@ export default class Core {
 		this.camera.aspect = window.innerWidth / window.innerHeight;
 		this.camera.near = 0.1;
 		this.camera.far = 10000;
-		this.camera.position.set(0, 10, 30);
+		this.camera.position.set(3, 3, 3);
 		this.camera.updateProjectionMatrix();
 	}
-
 
 	private _initRenderer() {
 		this.renderer.shadowMap.enabled = true;
@@ -123,5 +97,6 @@ export default class Core {
 			this.renderer.setPixelRatio(window.devicePixelRatio);
 		});
 	}
+
 
 }

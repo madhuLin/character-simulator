@@ -1,4 +1,4 @@
-import {BufferGeometry, Mesh, type NormalBufferAttributes} from "three";
+import {BufferGeometry, Mesh, Light, type NormalBufferAttributes} from "three";
 
 import {MeshBVH} from "three-mesh-bvh";
 
@@ -10,4 +10,8 @@ export function isMesh(obj: unknown): obj is Mesh {
 
 export function isBVHGeometry(obj: unknown): obj is BVHGeometry {
 	return (typeof obj === "object" && obj !== null && "boundsTree" in obj);
+}
+
+export function isLight(obj: unknown): obj is Light {
+	return obj instanceof Light;
 }

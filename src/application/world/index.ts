@@ -53,15 +53,18 @@ export default class World {
 		this.loader = loader;
 		this.emitter = emitter;
 		this.mode = mode;
+
+		let portalPosition: Vector3 | undefined;
+		if(mode === "Plaza") portalPosition = new Vector3(...portalPositions[0]);
+		else if (mode === "Entertainment") portalPosition = new Vector3(...portalPositions[1]);
+		else if(mode === "Grallery") portalPosition = new Vector3(...portalPositions[2]);
 		this.environment = new Environment({
 			scene: this.scene,
 			loader: this.loader,
 			emitter: this.emitter,
 			mode: this.mode,
+			portalPosition: portalPosition!
 		});
-		console.log("mode", mode, this.mode);
-		let portalPosition: Vector3 | undefined;
-		if (mode === "Entertainment") portalPosition = new Vector3(...portalPositions[0]);
 		
 		this.character = new Character({
 			scene: this.scene,
@@ -100,6 +103,7 @@ export default class World {
 		if (this.environment.is_load_finished && this.environment.colliders) {
 			//@ts-ignore
 			this.character.update(delta, this.environment.colliders as Mesh[]);
+			this.ray_caster_controls.updateTooltipRayCast(this.environment.raycast_objects);
 			this.ray_caster_controls.updateTooltipRayCast(this.environment.raycast_objects);
 			this.environment.update(delta);
 		}

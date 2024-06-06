@@ -7,7 +7,10 @@
 
     <load-progress v-model="percentage" :text="loading_text" @on-enter="onEnterApp" />
 
-    <Tool v-if="isToolVisible" :sceneValue="sceneValue" @effetParams="handleToolCompleted" @close="() => isToolVisible=false"></Tool>
+    <Tool v-if="isToolVisible" :sceneValue="sceneValue" @effetParams="handleToolCompleted"
+        @close="() => isToolVisible = false"></Tool>
+
+    <PreviewTooltip ref="c1" />
 </template>
 
 <script setup lang="ts">
@@ -16,13 +19,22 @@ import NesGameDialog from "@/components/NesGameDialog.vue";
 import NotifyTips from "@/components/NotifyTips.vue";
 import Core from "@/application/core";
 import { onMounted, ref, onBeforeUnmount, reactive } from "vue";
-import { ON_INTERSECT_TRIGGER, ON_INTERSECT_TRIGGER_STOP, ON_KEY_DOWN, ON_LOAD_PROGRESS, ON_CLICK_RAY_CAST } from "@/application/Constants";
+import { ON_INTERSECT_TRIGGER, ON_INTERSECT_TRIGGER_STOP, ON_KEY_DOWN, ON_LOAD_PROGRESS, 
+    ON_CLICK_RAY_CAST, ON_SHOW_TOOLTIP, ON_HIDE_TOOLTIP } from "@/application/Constants";
 import type { InteractionMesh } from "@/application/interactionDetection/types";
 import { PointerLockControls } from "three-stdlib";
 import router from "@/router";
 import Tool from "@/components/Tool.vue";
 const notify_ref = ref<InstanceType<typeof NotifyTips>>();
 const game_dialog_ref = ref<InstanceType<typeof NesGameDialog>>();
+
+    import PreviewTooltip from '@/components/PreviewTooltip.vue';
+    // 引用子组件
+const c1 = ref();
+const showToolTip = (eventData: any) =>{
+    eventData = eventData[0];
+    c1.value?.showPreviewTooltip(eventData.msg, eventData.tips);
+};
 
 // 加载相关
 const percentage = ref(0);
@@ -32,10 +44,10 @@ const loading_text = ref("加载中...");
 const isToolVisible = ref<boolean>(false);
 
 const toggleToolVisibility = (event: KeyboardEvent) => {
-  if (event.key === 'Tab') {
-    isToolVisible.value = !isToolVisible.value;
-    event.preventDefault(); // 防止 Tab 鍵的默認行為
-  }
+    if (event.key === 'Tab') {
+        isToolVisible.value = !isToolVisible.value;
+        event.preventDefault(); // 防止 Tab 鍵的默認行為
+    }
 };
 
 interface SceneValue {
@@ -44,37 +56,37 @@ interface SceneValue {
     character: string;
 }
 
-// 创建一个 ref 来存储选中的值
+// 創建初始 sceneValue 值
 let sceneValue = reactive<SceneValue>({
     timeOfDay: "morning",
     weather: "sunny",
     character: "boy"
 });
 
-// 定义触发事件的方法
-const handleToolCompleted = (value: {  timeOfDay:string, weather: string, character: string }) => {
+// 工具攔截按键事件
+const handleToolCompleted = (value: { timeOfDay: string, weather: string, character: string }) => {
     isToolVisible.value = false;
     console.log(value);
     sceneValue.timeOfDay = value.timeOfDay;
     sceneValue.weather = value.weather;
     sceneValue.character = value.character;
-    if(value.timeOfDay == "morning") {
+    if (value.timeOfDay == "morning") {
         core!.world.environment.setTime("morning");
     }
-    else if(value.timeOfDay == "afternoon") {
+    else if (value.timeOfDay == "afternoon") {
         core!.world.environment.setTime("afternoon");
     }
-    else if(value.timeOfDay == "night") {
+    else if (value.timeOfDay == "night") {
         core!.world.environment.setTime("night");
     }
 
-    if(value.weather == "sunny") {
+    if (value.weather == "sunny") {
         core!.world.environment.setWeather("sunny");
     }
-    else if(value.weather == "rainy") {
+    else if (value.weather == "rainy") {
         core!.world.environment.setWeather("rainy");
     }
-    else if(value.weather == "snowy") {
+    else if (value.weather == "snowy") {
         core!.world.environment.setWeather("snowy");
     }
 };
@@ -84,14 +96,14 @@ const handleToolCompleted = (value: {  timeOfDay:string, weather: string, charac
 let core: Core | undefined = undefined;
 
 /*
-* 触发场景交互提示
+* 觸發場景互動提示
 * */
 const onIntersectTrigger = ([user_data]: [user_date: InteractionMesh["userData"]]) => {
     notify_ref.value!.openNotify(user_data.title!);
 };
 
 /*
-* 结束场景交互提示时
+* 結束場景互動提示時
 * */
 const onIntersectTriggerStop = () => {
     notify_ref.value!.closeNotify();
@@ -107,25 +119,24 @@ const onKeyDown = ([key]: [key: string]) => {
 };
 
 /*
-* 处理不同交互盒子的交互事件
+* 處理不同互動盒子的互動事件
 * */
 const handleInteraction = (intersect: InteractionMesh) => {
     if (!core) return;
 
     switch (intersect.userData.type) {
         case "game":
-            // 处于nes游戏交互中，需禁用core.control中的按键触发，避免持续驱动character更新
+            // 處於nes遊戲互動中，需停用core.control中的按鍵觸發，避免持續驅動character更新
             core.control.disabled();
-            // 重置按键状态，防止键盘某个键锁死，持续驱动character更新
+            // 重置按鍵狀態，防止鍵盤某個鍵鎖死，持續驅動character更新
             core.control.resetStatus();
-            // 进入游戏交互中后，关闭交互检测，优化性能
+            // 進入遊戲互動後，關閉互動偵測，優化效能
             core.world.interaction_detection.disableDetection();
             game_dialog_ref.value!.openDialog(intersect.userData.title!, intersect.userData.url!);
             break;
         case "music":
             core.world.audio.togglePlayAudio();
             break;
-        // case "jumpScene":
 
     }
 };
@@ -161,17 +172,17 @@ const onJumpScene = () => {
 
 const onEnterApp = () => {
     if (core) {
-        // 进入时才允许控制角色
+        // 進入時才允許控制角色
         core.control.enabled();
         if (core.controls instanceof PointerLockControls) {
-            core.controls.lock();
+        core.controls.lock();
         }
 
-        // 场景模型加载完毕后将场景中需要光线投射检测的物体传入给rayCasterControls
+        // 場景模型載入完畢後將場景中需要光線投射偵測的物件傳入給rayCasterControls
         core.world.ray_caster_controls.bindClickRayCastObj(core.world.environment.raycast_objects);
-        // 音频自动播放受限于网页的初始化交互，因此进入后播放即可
-        //   core.world.audio.playAudio();
-        // 注销应用加载监听事件
+        // 音訊自動播放受限於網頁的初始化交互，因此進入後播放即可
+        // core.world.audio.playAudio();
+        // 登出應用程式載入監聽事件
         core.emitter.$off(ON_LOAD_PROGRESS);
     }
 };
@@ -185,12 +196,16 @@ onMounted(() => {
     core.emitter.$on(ON_INTERSECT_TRIGGER_STOP, onIntersectTriggerStop);
     core.emitter.$on(ON_KEY_DOWN, onKeyDown);
     core.emitter.$on(ON_LOAD_PROGRESS, onLoadProgress);
+    
     core.emitter.$on(ON_CLICK_RAY_CAST, onJumpScene);
+    core.emitter.$on(ON_SHOW_TOOLTIP, showToolTip);
+    core.emitter.$on(ON_HIDE_TOOLTIP, c1.value?.hidePreviewTooltip);
+
     window.addEventListener('keydown', toggleToolVisibility);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('keydown', toggleToolVisibility);
+    window.removeEventListener('keydown', toggleToolVisibility);
 });
 </script>
 

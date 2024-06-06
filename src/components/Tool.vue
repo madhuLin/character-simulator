@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, defineProps, toRefs} from 'vue';
+import { ref, reactive, onMounted, toRefs} from 'vue';
 // 接收父组件传递的 sceneValue
 const props = defineProps({sceneValue: Object});
 

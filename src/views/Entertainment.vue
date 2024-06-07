@@ -26,7 +26,8 @@ const notify_ref = ref<InstanceType<typeof NotifyTips>>();
 const game_dialog_ref = ref<InstanceType<typeof NesGameDialog>>();
 
 import router from "@/router";
-
+import { useStore } from '@/store/index';
+const store = useStore();
 import PreviewTooltip from '@/components/PreviewTooltip.vue';
 // 引用子组件
 const c1 = ref();
@@ -186,7 +187,8 @@ onMounted(() => {
     core.emitter.$on(ON_IN_PORTAL, onJumpScene);
     core.emitter.$on(ON_SHOW_TOOLTIP, showToolTip);
     core.emitter.$on(ON_HIDE_TOOLTIP, c1.value?.hidePreviewTooltip);
-    
+    core.world.environment.setTime(store.selectedTimeOfDay);
+    core.world.environment.setWeather(store.selectedWeather);
 });
 </script>
 

@@ -17,6 +17,9 @@ importers:
       nes.css:
         specifier: ^2.3.0
         version: 2.3.0
+      pinia:
+        specifier: ^2.1.7
+        version: 2.1.7(typescript@5.1.6)(vue@3.3.4)
       three:
         specifier: ^0.155.0
         version: 0.155.0
@@ -1270,6 +1273,18 @@ packages:
     resolution: {integrity: sha512-C3FsVNH1udSEX48gGX1xfvwTWfsYWj5U+8/uK15BGzIGrKoUpghX8hWZwa/OFnakBiiVNmBvemTJR5mcy7iPcg==}
     engines: {node: '>=4'}
 
+  pinia@2.1.7:
+    resolution: {integrity: sha512-+C2AHFtcFqjPih0zpYuvof37SFxMQ7OEG2zV9jRI12i9BOy3YQVAHwdKtyyc8pDcDyIc33WCIsZaCFWU7WWxGQ==}
+    peerDependencies:
+      '@vue/composition-api': ^1.4.0
+      typescript: '>=4.4.4'
+      vue: ^2.6.14 || ^3.3.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+      typescript:
+        optional: true
+
   pirates@4.0.6:
     resolution: {integrity: sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==}
     engines: {node: '>= 6'}
@@ -1615,6 +1630,17 @@ packages:
       sugarss:
         optional: true
       terser:
+        optional: true
+
+  vue-demi@0.14.8:
+    resolution: {integrity: sha512-Uuqnk9YE9SsWeReYqK2alDI5YzciATE0r2SkA6iMAtuXvNTMNACJLJEXNXaEy94ECuBe4Sk6RzRU80kjdbIo1Q==}
+    engines: {node: '>=12'}
+    hasBin: true
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
         optional: true
 
   vue-eslint-parser@9.3.1:
@@ -2920,6 +2946,14 @@ snapshots:
 
   pify@3.0.0: {}
 
+  pinia@2.1.7(typescript@5.1.6)(vue@3.3.4):
+    dependencies:
+      '@vue/devtools-api': 6.6.1
+      vue: 3.3.4
+      vue-demi: 0.14.8(vue@3.3.4)
+    optionalDependencies:
+      typescript: 5.1.6
+
   pirates@4.0.6: {}
 
   postcss-import@15.1.0(postcss@8.4.38):
@@ -3280,6 +3314,10 @@ snapshots:
     optionalDependencies:
       '@types/node': 18.17.3
       fsevents: 2.3.3
+
+  vue-demi@0.14.8(vue@3.3.4):
+    dependencies:
+      vue: 3.3.4
 
   vue-eslint-parser@9.3.1(eslint@8.46.0):
     dependencies:

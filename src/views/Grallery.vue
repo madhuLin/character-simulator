@@ -7,8 +7,7 @@
 
     <load-progress v-model="percentage" :text="loading_text" @on-enter="onEnterApp" />
 
-    <Tool v-if="isToolVisible" @effetParams="handleToolCompleted"
-        @close="() => isToolVisible = false"></Tool>
+    <Tool v-if="isToolVisible" @effetParams="handleToolCompleted" @close="() => isToolVisible = false"></Tool>
 
     <PreviewTooltip ref="c1" />
     <BoardsInfo ref="c2" />
@@ -20,13 +19,18 @@ import NesGameDialog from "@/components/NesGameDialog.vue";
 import NotifyTips from "@/components/NotifyTips.vue";
 import Core from "@/application/core/inedx2";
 import { onMounted, ref, reactive, onBeforeUnmount } from "vue";
-import { ON_INTERSECT_TRIGGER, ON_INTERSECT_TRIGGER_STOP, ON_KEY_DOWN, ON_LOAD_PROGRESS, ON_IN_PORTAL, 
-        ON_CLICK_RAY_CAST, ON_SHOW_TOOLTIP, 
-        ON_HIDE_TOOLTIP} from "@/application/Constants";
+import {
+    ON_INTERSECT_TRIGGER, ON_INTERSECT_TRIGGER_STOP, ON_KEY_DOWN, ON_LOAD_PROGRESS, ON_IN_PORTAL,
+    ON_CLICK_RAY_CAST, ON_SHOW_TOOLTIP,
+    ON_HIDE_TOOLTIP
+} from "@/application/Constants";
 import type { InteractionMesh } from "@/application/interactionDetection/types";
 import { PointerLockControls } from "three-stdlib";
 const notify_ref = ref<InstanceType<typeof NotifyTips>>();
 const game_dialog_ref = ref<InstanceType<typeof NesGameDialog>>();
+
+import { useStore } from '@/store/index';
+const store = useStore();
 
 import router from "@/router";
 import Tool from "@/components/Tool.vue";
@@ -40,11 +44,12 @@ const c2 = ref();
 
 // 定義互動盒子點擊事件
 const mouseClickHandler = (eventData: any) => {
+    console.log("mouseClickHandler");
     eventData = eventData[0];
     c2.value?.showBoardsBox(eventData.title, eventData.author, eventData.describe, eventData.src);
 };
 
-const showToolTip = (eventData: any) =>{
+const showToolTip = (eventData: any) => {
     eventData = eventData[0];
     c1.value?.showPreviewTooltip(eventData.msg, eventData.tips);
 };
@@ -54,8 +59,8 @@ const showToolTip = (eventData: any) =>{
 const isToolVisible = ref<boolean>(false);
 
 const toggleToolVisibility = () => {
-        isToolVisible.value = !isToolVisible.value;
-        // event.preventDefault(); // 防止 Tab 鍵的默認行為
+    isToolVisible.value = !isToolVisible.value;
+    // event.preventDefault(); // 防止 Tab 鍵的默認行為
 };
 
 // 定義工具攔事件處理方法
@@ -104,13 +109,13 @@ const onIntersectTriggerStop = () => {
 
 const onKeyDown = ([key]: [key: string]) => {
     if (core) {
-        if(key === "KeyF") {
+        if (key === "KeyF") {
             const intersect = core.world.interaction_detection.getIntersectObj();
             if (intersect) {
                 handleInteraction(intersect);
             }
         }
-        if(key === "KeyT") {
+        if (key === "KeyT") {
             toggleToolVisibility();
         }
     }
@@ -195,7 +200,8 @@ onMounted(() => {
     core.emitter.$on(ON_CLICK_RAY_CAST, mouseClickHandler);
     core.emitter.$on(ON_SHOW_TOOLTIP, showToolTip);
     core.emitter.$on(ON_HIDE_TOOLTIP, c1.value?.hidePreviewTooltip);
-    // window.addEventListener('keydown', toggleToolVisibility);
+    // core.world.environment.setTime(store.selectedTimeOfDay);
+    // core.world.environment.setWeather(store.selectedWeather);
 });
 
 onBeforeUnmount(() => {

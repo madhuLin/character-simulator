@@ -282,6 +282,12 @@ export default class Character {
 		if (key_code === "KeyV") {
 			this._switchPersonView();
 		}
+		if(key_code === "KeyT") {
+			this.printPosition();
+		}
+	}
+	private printPosition() {
+		console.log(this.character.position);
 	}
 
 	private _updateControls() {

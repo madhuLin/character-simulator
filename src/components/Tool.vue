@@ -61,6 +61,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, toRefs} from 'vue';
+import {useStore} from '@/store/index.ts'
 // // 接收父组件传递的 sceneValue
 // const props = defineProps({sceneValue: Object});
 
@@ -70,27 +71,34 @@ import { ref, reactive, onMounted, toRefs} from 'vue';
 // timeOfDay: "morning",
 //     weather: "sunny",
 //     character: "boy"
+const store = useStore();
+const selectedWeather = ref('');
+const selectedCharacter = ref('');
+const selectedTimeOfDay = ref('');
 
-const selectedWeather = ref('morning');
-const selectedCharacter = ref('sunny');
-const selectedTimeOfDay = ref('boy');
 const selectWeather = (weather) => {
+  store.selectedWeather = weather;
   selectedWeather.value = weather;
 };
 
 onMounted(() => {
+  // console.log(store.selectedCharacter);
   // 將 props.sceneValue 的值更新到本地 state 中
-  // selectCharacter.value = sceneValue.character.value;
-  // selectWeather.value = sceneValue.weather.value;
-  // selectTimeOfDay.value = sceneValue.timeOfDay.value;
+  selectCharacter.value = store.selectedCharacter;
+  selectWeather.value = store.selectedWeather;
+  selectTimeOfDay.value = store.selectedTimeOfDay;
+
+  console.log(`天氣: ${selectedWeather.value}, 角色: ${selectedCharacter.value}, 時間: ${selectedTimeOfDay.value}`);
 });
 
 const selectCharacter = (character) => {
   selectedCharacter.value = character;
+  store.selectedCharacter = character;
 };
 
 const selectTimeOfDay = (timeOfDay) => {
   selectedTimeOfDay.value = timeOfDay;
+  store.selectedTimeOfDay = timeOfDay;
 };
 
 const emit = defineEmits(['effetParams']);

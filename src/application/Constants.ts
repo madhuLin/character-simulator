@@ -61,7 +61,7 @@ export const AUDIO_URL = new URL("../assets/audio/Midnight City.m4a", import.met
 // export const PLAZA_DESERT_SCENE_URL = new URL(".../assets/models/low_poly_desert.glb", import.meta.url).href;
 export const PLAZA_CITY_SCENE_URL = new URL("../assets/models/low_poly_city.glb", import.meta.url).href;
 export const PLAZA_EFFECT_SCENE_URL = new URL("../assets/img/smoke.png", import.meta.url).href;
-
+export const PLAZA_PORTAL_SCENE_URL = new URL("../assets/models/portal.glb", import.meta.url).href;
 
 export const ON_CLICK_RAY_CAST = "on-click-ray-cast";
 export const ON_SHOW_TOOLTIP = "on-show-tooltip";
@@ -71,6 +71,7 @@ export const ON_IN_PORTAL = "on-in-portal";
 export const portalPositions: [number, number, number][] = [
     [19, 0.7, -18],
     [-1.4, 0.05, 16],
+    [-2.1, 0.05, 4],
     [-2.1, 0.05, 4],
 ];
 

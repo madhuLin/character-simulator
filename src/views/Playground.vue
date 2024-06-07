@@ -10,39 +10,52 @@
     <Tool v-if="isToolVisible" @effetParams="handleToolCompleted" @close="() => isToolVisible = false"></Tool>
 
     <PreviewTooltip ref="c1" />
+    <BoardsInfo ref="c2" />
 </template>
 
 <script setup lang="ts">
 import LoadProgress from "@/components/LoadProgress.vue";
 import NesGameDialog from "@/components/NesGameDialog.vue";
 import NotifyTips from "@/components/NotifyTips.vue";
-import Core from "@/application/core";
-import { onMounted, ref, onBeforeUnmount, reactive } from "vue";
+import Core from "@/application/core/inedx2";
+import { onMounted, ref, reactive, onBeforeUnmount } from "vue";
 import {
-    ON_INTERSECT_TRIGGER, ON_INTERSECT_TRIGGER_STOP, ON_KEY_DOWN, ON_LOAD_PROGRESS,
-    ON_CLICK_RAY_CAST, ON_SHOW_TOOLTIP, ON_HIDE_TOOLTIP
+    ON_INTERSECT_TRIGGER, ON_INTERSECT_TRIGGER_STOP, ON_KEY_DOWN, ON_LOAD_PROGRESS, ON_IN_PORTAL,
+    ON_CLICK_RAY_CAST, ON_SHOW_TOOLTIP,
+    ON_HIDE_TOOLTIP
 } from "@/application/Constants";
 import type { InteractionMesh } from "@/application/interactionDetection/types";
 import { PointerLockControls } from "three-stdlib";
-import router from "@/router";
-import Tool from "@/components/Tool.vue";
 const notify_ref = ref<InstanceType<typeof NotifyTips>>();
 const game_dialog_ref = ref<InstanceType<typeof NesGameDialog>>();
+
 import { useStore } from '@/store/index';
 const store = useStore();
+
+import router from "@/router";
+import Tool from "@/components/Tool.vue";
+
 import PreviewTooltip from '@/components/PreviewTooltip.vue';
+import BoardsInfo from '@/components/BoardsInfo.vue';
+
 // 引用子组件
 const c1 = ref();
+const c2 = ref();
+
+// 定義互動盒子點擊事件
+const mouseClickHandler = (eventData: any) => {
+    console.log("mouseClickHandler");
+    eventData = eventData[0];
+    c2.value?.showBoardsBox(eventData.title, eventData.author, eventData.describe, eventData.src);
+};
+
 const showToolTip = (eventData: any) => {
     eventData = eventData[0];
     c1.value?.showPreviewTooltip(eventData.msg, eventData.tips);
 };
 
-// 加載相關
-const percentage = ref(0);
-const loading_text = ref("加载中...");
 
-// 工具相關
+// 工具攔截按键事件
 const isToolVisible = ref<boolean>(false);
 
 const toggleToolVisibility = () => {
@@ -50,26 +63,9 @@ const toggleToolVisibility = () => {
     // event.preventDefault(); // 防止 Tab 鍵的默認行為
 };
 
-// interface SceneValue {
-//     timeOfDay: string;
-//     weather: string;
-//     character: string;
-// }
-
-// // 創建初始 sceneValue 值
-// let sceneValue = reactive<SceneValue>({
-//     timeOfDay: "morning",
-//     weather: "sunny",
-//     character: "boy"
-// });
-
-// 工具攔截按键事件
+// 定義工具攔事件處理方法
 const handleToolCompleted = (value: { timeOfDay: string, weather: string, character: string }) => {
     isToolVisible.value = false;
-    console.log(value);
-    // sceneValue.timeOfDay = value.timeOfDay;
-    // sceneValue.weather = value.weather;
-    // sceneValue.character = value.character;
     if (value.timeOfDay == "morning") {
         core!.world.environment.setTime("morning");
     }
@@ -91,7 +87,9 @@ const handleToolCompleted = (value: { timeOfDay: string, weather: string, charac
     }
 };
 
-
+// 加載相關事件
+const percentage = ref(0);
+const loading_text = ref("加载中...");
 
 let core: Core | undefined = undefined;
 
@@ -142,7 +140,6 @@ const handleInteraction = (intersect: InteractionMesh) => {
         case "music":
             core.world.audio.togglePlayAudio();
             break;
-
     }
 };
 
@@ -169,17 +166,9 @@ const onLoadProgress = ([{ url, loaded, total }]: [{ url: string, loaded: number
     }
 };
 
-
-// 跳轉場景
-const onJumpScene = (map: string) => {
-    console.log("jump scene", map);
-    if(map[0] === "Entertainment") router.push("/entertainment");
-    else if(map[0] === "Grallery") router.push("/gallery");
-};
-
 const onEnterApp = () => {
     if (core) {
-        // 進入時才允許控制角色
+        // 进入时才允许控制角色
         core.control.enabled();
         if (core.controls instanceof PointerLockControls) {
             core.controls.lock();
@@ -194,30 +183,37 @@ const onEnterApp = () => {
     }
 };
 
+//跳轉場景
+const onJumpScene = () => {
+    router.push("/");
+};
+
 onMounted(() => {
-    console.log("mounted");
-    core = new Core("Plaza");
+    core = new Core("Playground");
     core.render();
 
     core.emitter.$on(ON_INTERSECT_TRIGGER, onIntersectTrigger);
     core.emitter.$on(ON_INTERSECT_TRIGGER_STOP, onIntersectTriggerStop);
     core.emitter.$on(ON_KEY_DOWN, onKeyDown);
     core.emitter.$on(ON_LOAD_PROGRESS, onLoadProgress);
-
-    core.emitter.$on(ON_CLICK_RAY_CAST, onJumpScene);
+    core.emitter.$on(ON_IN_PORTAL, onJumpScene);
+    core.emitter.$on(ON_CLICK_RAY_CAST, mouseClickHandler);
     core.emitter.$on(ON_SHOW_TOOLTIP, showToolTip);
     core.emitter.$on(ON_HIDE_TOOLTIP, c1.value?.hidePreviewTooltip);
-
-    console.log(store.selectedTimeOfDay, store.selectedWeather);
     core.world.environment.setTime(store.selectedTimeOfDay);
     core.world.environment.setWeather(store.selectedWeather);
-
-    // window.addEventListener('keydown', toggleToolVisibility);
 });
 
-// onBeforeUnmount(() => {
-//     window.removeEventListener('keydown', toggleToolVisibility);
-// });
+onBeforeUnmount(() => {
+    // window.removeEventListener('keydown', toggleToolVisibility);
+    // core.emitter.$off(ON_CLICK_RAY_CAST, mouseClickHandler);
+});
 </script>
 
-<style lang="less"></style>
+<style scoped>
+#webgl {
+    width: 100%;
+    height: 100%;
+
+}
+</style>

@@ -4,7 +4,7 @@ import {
 	COLLISION_SCENE_URL, ON_LOAD_SCENE_FINISH, SCENE_BACKGROUND_TEXTURE, WATER_NORMAL1_TEXTURE,
 	WATER_NORMAL2_TEXTURE,
 	// Plaza
-	PLAZA_CITY_SCENE_URL, PLAZA_EFFECT_SCENE_URL,
+	PLAZA_CITY_SCENE_URL, PLAZA_EFFECT_SCENE_URL, PLAZA_PORTAL_SCENE_URL,
 	// 傳送門 雨 雪
 	SCENE_BACKGROUND1_TEXTURE, PORTAL_PERLINNOISE_TEXTURE, PORTAL_SPARKNOISE_TEXTURE,
 	PORTAL_WATERURBURBULENCE_TEXTURE, PORTAL_NOISE_TEXTURE,
@@ -99,6 +99,9 @@ export default class Environment {
 			this._loadGralleryEnvironment();
 			this.createPortal();
 		}
+		else if (this.mode === "Playground") {
+			
+		}
 
 
 	}
@@ -188,7 +191,8 @@ export default class Environment {
 				describe: BOARDS_INFO[key].describe,
 				index: key,
 				src: this.texture_boards[key].image.src,
-				tips: "Tips：點擊此畫可查看詳情"
+				tips: "Tips：點擊此畫可查看詳情",
+				show_boards: true
 			};
 
 			// 翻轉貼圖
@@ -229,9 +233,10 @@ export default class Environment {
 			// const arrl = [/*COLLISION_SCENE_URL*/PLAZA_COLLISION_SCENE_URL];
 			// this._loadCollisionScenes(arrl);
 			await this._loadCollisionScene(SCENE_URL);
-			this._initSceneOtherEffectsMorning();
-			this._initDoor();
-
+			// this._initSceneOtherEffectsMorning();
+			this._initDoor([18.7, 0.6, -16.8], "Tips：點擊此門進入遊戲!", "Entertainment");
+			this._initDoor([46.5, 0.6 ,-31.8], "Tips：點擊此門進入美術館!", "Grallery");
+			this._initDoor([46.5, 0.6 ,-31.8], "Tips：點擊此門進入遊樂場!", "Grallery");
 
 			// this._createWater();
 			this.is_load_finished = true;
@@ -247,7 +252,7 @@ export default class Environment {
 	private async _loadEntertainmentEnvironment(SCENE_URL: string) {
 		try {
 			await this._loadCollisionScene(SCENE_URL);
-			this._initSceneOtherEffectsMorning();
+			// this._initSceneOtherEffectsMorning();
 			// this._initDoor();
 
 			this._createWater();
@@ -300,61 +305,88 @@ export default class Environment {
 	/*
 	* 創建門
 	* */
-	private _initDoor() {
-		this.portalMaterial = new ShaderMaterial({
-			uniforms: {
-				time: {
-					value: 0.0,
-				},
-				perlinnoise: {
-					value: this.loader.texture_loader.load(PORTAL_PERLINNOISE_TEXTURE),
-				},
-				sparknoise: {
-					value: this.loader.texture_loader.load(PORTAL_SPARKNOISE_TEXTURE),
-				},
-				waterturbulence: {
-					value: this.loader.texture_loader.load(PORTAL_WATERURBURBULENCE_TEXTURE),
-				},
-				noiseTex: {
-					value: this.loader.texture_loader.load(PORTAL_NOISE_TEXTURE),
-				},
-				color5: {
-					value: new Vector3(...options.color5),
-				},
-				color4: {
-					value: new Vector3(...options.color4),
-				},
-				color3: {
-					value: new Vector3(...options.color3),
-				},
-				color2: {
-					value: new Vector3(...options.color2),
-				},
-				color1: {
-					value: new Vector3(...options.color1),
-				},
-				color0: {
-					value: new Vector3(...options.color0),
-				},
-				resolution: {
-					value: new Vector2(window.innerWidth, window.innerHeight),
-				},
-			},
-			fragmentShader: portalFragmentShader,
-			vertexShader: portalVertexShader,
+	private async _initDoor(position: [number, number, number], tips: string = "Tips: 點擊此門可進入傳送門!", map: string): Promise<void> {
+		return new Promise(resolve => {
+			this.loader.gltf_loader.load(PLAZA_PORTAL_SCENE_URL, (gltf) => {
+				//統一大小
+				const scale = 0.4;
+				let door = gltf.scene.children[0];
+				door.scale.set(scale, scale, scale);
+				door.position.set(position[0], position[1], position[2]);
+				// 添加碰撞體
+				const geometry = new BoxGeometry(3, 5, 3); // 使用盒子碰撞體作為示例
+				const material = new MeshBasicMaterial({ visible: false }); // 使碰撞體不可見   
+				const collider = new Mesh(geometry, material);
+				door.add(collider); // 將碰撞體添加為傳送門的子物件
+				this.scene.add(door);
+				// gltf.scene.traverse(item => {
+
+				// });
+				collider.userData = {
+					hint: true,
+					map: map,
+					tips: tips,
+				};
+				this.raycast_objects.push(collider);
+				resolve();
+			});
 		});
-
-
-
-
-		const planeGeometry = new PlaneGeometry(2.5, 2.5, 1, 1);
-		const portal = new Mesh(planeGeometry, this.portalMaterial);
-		portal.position.copy(this.portalPosition);
-		this.scene.add(portal);
-		portal.userData.mode = "Entertainment";
-		this.raycast_objects.push(portal);
-
 	}
+	// private _initDoor() {
+	// 	this.portalMaterial = new ShaderMaterial({
+	// 		uniforms: {
+	// 			time: {
+	// 				value: 0.0,
+	// 			},
+	// 			perlinnoise: {
+	// 				value: this.loader.texture_loader.load(PORTAL_PERLINNOISE_TEXTURE),
+	// 			},
+	// 			sparknoise: {
+	// 				value: this.loader.texture_loader.load(PORTAL_SPARKNOISE_TEXTURE),
+	// 			},
+	// 			waterturbulence: {
+	// 				value: this.loader.texture_loader.load(PORTAL_WATERURBURBULENCE_TEXTURE),
+	// 			},
+	// 			noiseTex: {
+	// 				value: this.loader.texture_loader.load(PORTAL_NOISE_TEXTURE),
+	// 			},
+	// 			color5: {
+	// 				value: new Vector3(...options.color5),
+	// 			},
+	// 			color4: {
+	// 				value: new Vector3(...options.color4),
+	// 			},
+	// 			color3: {
+	// 				value: new Vector3(...options.color3),
+	// 			},
+	// 			color2: {
+	// 				value: new Vector3(...options.color2),
+	// 			},
+	// 			color1: {
+	// 				value: new Vector3(...options.color1),
+	// 			},
+	// 			color0: {
+	// 				value: new Vector3(...options.color0),
+	// 			},
+	// 			resolution: {
+	// 				value: new Vector2(window.innerWidth, window.innerHeight),
+	// 			},
+	// 		},
+	// 		fragmentShader: portalFragmentShader,
+	// 		vertexShader: portalVertexShader,
+	// 	});
+
+
+
+
+	// 	const planeGeometry = new PlaneGeometry(2.5, 2.5, 1, 1);
+	// 	const portal = new Mesh(planeGeometry, this.portalMaterial);
+	// 	portal.position.copy(this.portalPosition);
+	// 	this.scene.add(portal);
+	// 	portal.userData.mode = "Entertainment";
+	// 	this.raycast_objects.push(portal);
+
+	// }
 
 	// /*
 	// * 載入場景全部物體
@@ -696,15 +728,3 @@ export default class Environment {
 }
 
 
-const options = {
-	exposure: 2.8,
-	bloomStrength: 2.39,
-	bloomThreshold: 0,
-	bloomRadius: 0.38,
-	color0: [1, 5, 1],
-	color1: [2, 20, 2],
-	color2: [44, 97, 15],
-	color3: [14, 28, 5],
-	color4: [255, 255, 255],
-	color5: [74, 145, 0],
-};

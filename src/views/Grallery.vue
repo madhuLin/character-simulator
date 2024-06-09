@@ -64,8 +64,9 @@ const toggleToolVisibility = () => {
 };
 
 // 定義工具攔事件處理方法
-const handleToolCompleted = (value: { timeOfDay: string, weather: string, character: string }) => {
+const handleToolCompleted = (value: { timeOfDay: string, weather: string, mode: string, speed: number }) => {
     isToolVisible.value = false;
+    //設定時間
     if (value.timeOfDay == "morning") {
         core!.world.environment.setTime("morning");
     }
@@ -75,7 +76,7 @@ const handleToolCompleted = (value: { timeOfDay: string, weather: string, charac
     else if (value.timeOfDay == "night") {
         core!.world.environment.setTime("night");
     }
-
+    //設定天氣
     if (value.weather == "sunny") {
         core!.world.environment.setWeather("sunny");
     }
@@ -84,6 +85,18 @@ const handleToolCompleted = (value: { timeOfDay: string, weather: string, charac
     }
     else if (value.weather == "snowy") {
         core!.world.environment.setWeather("snowy");
+    }
+
+    //設定角色模式
+    if(value.mode == "walk") {
+        core!.world.character.setMode("walk");
+    }
+    else if(value.mode == "fly") {
+        core!.world.character.setMode("fly");
+    }
+    //設定速度
+    if(value.speed) {
+        core!.world.character.setSpeed(value.speed);
     }
 };
 
@@ -202,6 +215,8 @@ onMounted(() => {
     core.emitter.$on(ON_HIDE_TOOLTIP, c1.value?.hidePreviewTooltip);
     // core.world.environment.setTime(store.selectedTimeOfDay);
     // core.world.environment.setWeather(store.selectedWeather);
+    core.world.character.setMode(store.selectedCharacterMode);
+    core.world.character.setSpeed(Number(store.selectedSpeed));
 });
 
 onBeforeUnmount(() => {

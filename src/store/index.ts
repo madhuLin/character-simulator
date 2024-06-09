@@ -3,8 +3,9 @@ import { defineStore } from 'pinia';
 interface StoreState {
   count: number;
   selectedWeather: string;
-  selectedCharacter: string;
+  selectedCharacterMode: string;
   selectedTimeOfDay: string;
+  selectedSpeed: string;
   // isLoggedIn: boolean;
   // userInfo: any | null;
 }
@@ -14,8 +15,9 @@ export const useStore = defineStore({
   state: (): StoreState => ({
     count: 0,
     selectedWeather: 'sunny',
-    selectedCharacter: 'boy',
-    selectedTimeOfDay: 'morning'
+    selectedCharacterMode: 'walk',
+    selectedTimeOfDay: 'morning',
+    selectedSpeed: '3',
   }),
   getters: {
     // 定義 getters 函數

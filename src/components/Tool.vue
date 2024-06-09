@@ -21,31 +21,37 @@
       <div class="bg-white dark:bg-slate-800 rounded-lg px-6 py-4 ring-1 ring-slate-900/5 shadow-xl mb-4">
         <h3 class="text-slate-900 dark:text-white mb-2 text-base font-medium tracking-tight">選擇天氣</h3>
         <div class="flex space-x-4">
-          <button @click="selectWeather('sunny')" class="flex-1 p-2 bg-green-100 rounded shadow" :class="{ 'bg-green-400': selectedTimeOfDay === 'sunny' }">
+          <button @click="selectWeather('sunny')" class="flex-1 p-2 bg-green-100 rounded shadow" :class="{ 'bg-green-400': selectedWeather === 'sunny' }">
             <img src="@/assets/vue/sunny.png" alt="晴天" class="mx-auto w-24 h-24">
           </button>
-          <button @click="selectWeather('rainy')" class="flex-1 p-2 bg-green-100 rounded shadow" :class="{ 'bg-green-400': selectedTimeOfDay === 'rainy' }">
+          <button @click="selectWeather('rainy')" class="flex-1 p-2 bg-green-100 rounded shadow" :class="{ 'bg-green-400': selectedWeather === 'rainy' }">
             <img src="@/assets/vue/rainy.png" alt="雨天" class="mx-auto w-24 h-24">
           </button>
-          <button @click="selectWeather('snowy')" class="flex-1 p-2 bg-green-100 rounded shadow" :class="{ 'bg-green-400': selectedTimeOfDay === 'snowy' }">
+          <button @click="selectWeather('snowy')" class="flex-1 p-2 bg-green-100 rounded shadow" :class="{ 'bg-green-400': selectedWeather === 'snowy' }">
             <img src="@/assets/vue/snowy.png" alt="雪天" class="mx-auto w-24 h-24">
           </button>
         </div>
       </div>
 
-      <!-- 角色選擇 -->
-      <div class="bg-white dark:bg-slate-800 rounded-lg px-6 py-4 ring-1 ring-slate-900/5 shadow-xl">
-        <h3 class="text-slate-900 dark:text-white mb-2 text-base font-medium tracking-tight">選擇角色</h3>
+
+       <!-- 模式選擇 -->
+       <div class="bg-white dark:bg-slate-800 rounded-lg px-6 py-4 ring-1 ring-slate-900/5 shadow-xl mb-4">
+        <h3 class="text-slate-900 dark:text-white mb-2 text-base font-medium tracking-tight">選擇模式</h3>
         <div class="flex space-x-4">
-          <button @click="selectCharacter('A')" class="flex-1 p-2 bg-red-100 rounded shadow">
-            <img src="@/assets/character-a.png" alt="角色A" class="mx-auto w-24 h-24">
+          <button @click="selectMode('walk')" class="flex-1 p-2 bg-red-100 rounded shadow" :class="{ 'bg-red-400': selectedCharacterMode === 'walk' }">
+            行走模式
           </button>
-          <button @click="selectCharacter('B')" class="flex-1 p-2 bg-red-100 rounded shadow">
-            <img src="@/assets/character-b.png" alt="角色B" class="mx-auto w-24 h-24">
+          <button @click="selectMode('fly')" class="flex-1 p-2 bg-red-100 rounded shadow" :class="{ 'bg-red-400': selectedCharacterMode === 'fly' }">
+            飛行模式
           </button>
-          <button @click="selectCharacter('角色C')" class="flex-1 p-2 bg-red-100 rounded shadow">
-            <img src="@/assets/character-c.png" alt="角色C" class="mx-auto w-24 h-24">
-          </button>
+        </div>
+      </div>
+      <!-- 速度選擇 -->
+      <div class="bg-white dark:bg-slate-800 rounded-lg px-6 py-4 ring-1 ring-slate-900/5 shadow-xl">
+        <h3 class="text-slate-900 dark:text-white mb-2 text-base font-medium tracking-tight">選擇速度</h3>
+        <div class="flex items-center">
+          <input type="range" min="1" max="10" v-model="selectedSpeed" class="flex-1" />
+          <span class="ml-4">{{ selectedSpeed }}</span>
         </div>
       </div>
 
@@ -60,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, toRefs} from 'vue';
+import { ref, onMounted} from 'vue';
 import {useStore} from '@/store/index.ts'
 // // 接收父组件传递的 sceneValue
 // const props = defineProps({sceneValue: Object});
@@ -73,42 +79,50 @@ import {useStore} from '@/store/index.ts'
 //     character: "boy"
 const store = useStore();
 const selectedWeather = ref('');
-const selectedCharacter = ref('');
+const selectedCharacterMode = ref('');
 const selectedTimeOfDay = ref('');
 
-const selectWeather = (weather) => {
-  store.selectedWeather = weather;
-  selectedWeather.value = weather;
-};
+const selectedSpeed = ref(3);
+
+
 
 onMounted(() => {
   // console.log(store.selectedCharacter);
   // 將 props.sceneValue 的值更新到本地 state 中
-  selectCharacter.value = store.selectedCharacter;
-  selectWeather.value = store.selectedWeather;
-  selectTimeOfDay.value = store.selectedTimeOfDay;
+  selectedCharacterMode.value = store.selectedCharacterMode;
+  selectedWeather.value = store.selectedWeather;
+  selectedTimeOfDay.value = store.selectedTimeOfDay;
+  selectedSpeed.value = store.selectedSpeed;
 
-  console.log(`天氣: ${selectedWeather.value}, 角色: ${selectedCharacter.value}, 時間: ${selectedTimeOfDay.value}`);
+  console.log(`天氣: ${selectedWeather.value}, 角色: ${selectedCharacterMode.value}, 時間: ${selectedTimeOfDay.value}`);
 });
 
-const selectCharacter = (character) => {
-  selectedCharacter.value = character;
-  store.selectedCharacter = character;
+const selectWeather = (weather) => {
+  selectedWeather.value = weather;
+};
+
+const selectMode = (mode) => {
+  selectedCharacterMode.value = mode;
+  
 };
 
 const selectTimeOfDay = (timeOfDay) => {
-  selectedTimeOfDay.value = timeOfDay;
-  store.selectedTimeOfDay = timeOfDay;
+  selectedTimeOfDay.value = timeOfDay;  
 };
 
 const emit = defineEmits(['effetParams']);
 const handleToolCompleted = () => {
-  console.log(`天氣: ${selectedWeather.value}, 角色: ${selectedCharacter.value}, 時間: ${selectedTimeOfDay.value}`);
+  console.log(`天氣: ${selectedWeather.value}, 角色: ${selectedCharacterMode.value}, 時間: ${selectedTimeOfDay.value}`);
+  store.selectedCharacterMode = selectedCharacterMode.value;
+  store.selectedTimeOfDay = selectedTimeOfDay.value;
+  store.selectedWeather = selectedWeather.value;
+  store.selectedSpeed = selectedSpeed.value;
   // 這裡可以添加保存設定的邏輯
   let params = {
     weather: selectedWeather.value,
-    character: selectedCharacter.value,
-    timeOfDay: selectedTimeOfDay.value
+    mode: selectedCharacterMode.value,
+    timeOfDay: selectedTimeOfDay.value,
+    speed: Number(selectedSpeed.value)
   }
   emit('effetParams', params);
 };

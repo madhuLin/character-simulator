@@ -64,8 +64,9 @@ const toggleToolVisibility = () => {
 };
 
 // 定義工具攔事件處理方法
-const handleToolCompleted = (value: { timeOfDay: string, weather: string, character: string }) => {
+const handleToolCompleted = (value: { timeOfDay: string, weather: string, mode: string, speed: number }) => {
     isToolVisible.value = false;
+    //設定時間
     if (value.timeOfDay == "morning") {
         core!.world.environment.setTime("morning");
     }
@@ -75,7 +76,7 @@ const handleToolCompleted = (value: { timeOfDay: string, weather: string, charac
     else if (value.timeOfDay == "night") {
         core!.world.environment.setTime("night");
     }
-
+    //設定天氣
     if (value.weather == "sunny") {
         core!.world.environment.setWeather("sunny");
     }
@@ -84,6 +85,18 @@ const handleToolCompleted = (value: { timeOfDay: string, weather: string, charac
     }
     else if (value.weather == "snowy") {
         core!.world.environment.setWeather("snowy");
+    }
+
+    //設定角色模式
+    if(value.mode == "walk") {
+        core!.world.character.setMode("walk");
+    }
+    else if(value.mode == "fly") {
+        core!.world.character.setMode("fly");
+    }
+    //設定速度
+    if(value.speed) {
+        core!.world.character.setSpeed(value.speed);
     }
 };
 
@@ -168,7 +181,7 @@ const onLoadProgress = ([{ url, loaded, total }]: [{ url: string, loaded: number
 
 const onEnterApp = () => {
     if (core) {
-        // 进入时才允许控制角色
+        // 進入時才能控制角色
         core.control.enabled();
         if (core.controls instanceof PointerLockControls) {
             core.controls.lock();

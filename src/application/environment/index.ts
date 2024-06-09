@@ -8,21 +8,21 @@ import {
 	// 傳送門 雨 雪
 	SCENE_BACKGROUND1_TEXTURE, PORTAL_PERLINNOISE_TEXTURE, PORTAL_SPARKNOISE_TEXTURE,
 	PORTAL_WATERURBURBULENCE_TEXTURE, PORTAL_NOISE_TEXTURE,
-	// graallery
+	// grallery
 	GALLETY_SCENE_URL, STATIC_SCENE_URL, BOARD_TEXTURES, BOARDS_INFO,
+	// playground
+	PLAYGROUND_SCENE_URL
 } from "../Constants";
 import {
 	Scene, AmbientLight, DirectionalLight, EquirectangularReflectionMapping, Fog, Group, HemisphereLight,
 	Mesh, PlaneGeometry, Vector2, MeshBasicMaterial, DoubleSide, Object3D, MeshLambertMaterial, PointLight,
 	ShaderMaterial, Vector3, CircleGeometry, BufferGeometry, BufferAttribute, Texture,
 
-	//graallery
-	SRGBColorSpace, Material, BoxGeometry
+	//grallery
+	SRGBColorSpace, Material, BoxGeometry,
+	//playground
+	SphereGeometry
 } from "three";
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
 
 
 
@@ -33,14 +33,12 @@ import { MeshBVH, StaticGeometryGenerator, type MeshBVHOptions } from "three-mes
 import Emitter from "../emitter";
 import { SnowScene } from "./snowscene";
 import { RainScene } from "./rainscene";
-//@ts-ignore
-import portalVertexShader from '../../assets/shaders/portal/vertex.glsl?raw';
-//@ts-ignore
-import portalFragmentShader from '../../assets/shaders/portal/fragment.glsl?raw';
 import { TeleporterManager } from "./teleoirter";
 
 //grallery
 import { Reflector } from "../lib/Reflector";
+//playgroud
+import Map from "../maps/map";
 
 
 interface EnvironmentParams {
@@ -73,6 +71,9 @@ export default class Environment {
 	private texture_boards: Record<string, Texture> = {};
 	private gallery_boards: Record<string, Mesh> = {};
 	private scaleGrallery = 0.3; //grallery 縮放比例
+
+	//playgroud
+	private map: Map | undefined;
 	constructor({
 		scene,
 		loader,
@@ -100,12 +101,27 @@ export default class Environment {
 			this.createPortal();
 		}
 		else if (this.mode === "Playground") {
-			
+			this._loadPlaygroundEnvironment();
+			this.createPortal();
 		}
 
 
 	}
 
+	//enterntainment
+	private async _loadPlaygroundEnvironment() {
+		try {
+			// await this._loadCollisionScene(PLAYGROUND_SCENE_URL);
+			await this._loadPlaygroundCollisionScene(PLAYGROUND_SCENE_URL);
+			this.is_load_finished = true;
+			this.emitter.$emit(ON_LOAD_SCENE_FINISH);
+		} catch (e) {
+			console.log(e);
+		}
+
+	}
+
+	//grallery
 	private async _loadGralleryEnvironment() {
 		try {
 			await this._loadCollisionScene(GALLETY_SCENE_URL);
@@ -235,8 +251,8 @@ export default class Environment {
 			await this._loadCollisionScene(SCENE_URL);
 			// this._initSceneOtherEffectsMorning();
 			this._initDoor([18.7, 0.6, -16.8], "Tips：點擊此門進入遊戲!", "Entertainment");
-			this._initDoor([46.5, 0.6 ,-31.8], "Tips：點擊此門進入美術館!", "Grallery");
-			this._initDoor([46.5, 0.6 ,-31.8], "Tips：點擊此門進入遊樂場!", "Grallery");
+			this._initDoor([46.5, 0.6, -31.8], "Tips：點擊此門進入美術館!", "Grallery");
+			this._initDoor([46.5, 0.6, -10], "Tips：點擊此門進入遊樂場!", "Playground", true);
 
 			// this._createWater();
 			this.is_load_finished = true;
@@ -305,7 +321,7 @@ export default class Environment {
 	/*
 	* 創建門
 	* */
-	private async _initDoor(position: [number, number, number], tips: string = "Tips: 點擊此門可進入傳送門!", map: string): Promise<void> {
+	private async _initDoor(position: [number, number, number], tips: string = "Tips: 點擊此門可進入傳送門!", map: string, rotation: boolean = false): Promise<void> {
 		return new Promise(resolve => {
 			this.loader.gltf_loader.load(PLAZA_PORTAL_SCENE_URL, (gltf) => {
 				//統一大小
@@ -313,6 +329,9 @@ export default class Environment {
 				let door = gltf.scene.children[0];
 				door.scale.set(scale, scale, scale);
 				door.position.set(position[0], position[1], position[2]);
+				// 添加旋轉
+				if(rotation) door.rotation.y = Math.PI; // 180度旋轉
+
 				// 添加碰撞體
 				const geometry = new BoxGeometry(3, 5, 3); // 使用盒子碰撞體作為示例
 				const material = new MeshBasicMaterial({ visible: false }); // 使碰撞體不可見   
@@ -332,6 +351,7 @@ export default class Environment {
 			});
 		});
 	}
+
 	// private _initDoor() {
 	// 	this.portalMaterial = new ShaderMaterial({
 	// 		uniforms: {
@@ -403,6 +423,60 @@ export default class Environment {
 	// 	}
 	// }
 
+	// private async _loadPlaygroundCollisionScene(SCENE_URL: string) : Promise<void> {
+	// 	return new Promise(resolve => {
+
+	// 		this.loader.gltf_loader.load(SCENE_URL /* PLAZA_UFO_SCENE_URL PLAZA_COLLISION_SCENE_URL COLLISION_SCENE_URL*/, (gltf) => {
+	// 			this.collision_scene = new Group();
+	// 			// 創建一組 Mesh 節點
+	// 			// 提取 Group 中的 Mesh 對象並創建符合結構的對象
+	// 			const nodes = { nodes: gltf.scene.children.filter(child => child instanceof Mesh) as THREE.Mesh[] };
+	// 			// 創建 Map 實例
+	// 			this.map = new Map(this.scene, nodes);
+	// 			const objectsToRender = this.map.render();
+
+	// 			// 將這些對象添加到場景中進行渲染
+	// 			objectsToRender.forEach(obj => {
+	// 				this.scene.add(obj);
+	// 				console.log(obj);
+	// 			});
+	// 			// this.collision_scene = objectsToRender;
+	// 			objectsToRender.forEach(obj => this.collision_scene!.add(obj)); // 添加新的對象
+	// 			this.scene.add(this.collision_scene);
+
+	// 			this.collision_scene.updateMatrixWorld(true);
+
+	// 			const static_generator = new StaticGeometryGenerator(this.collision_scene);
+	// 			static_generator.attributes = ["position"];
+	// 			const generate_geometry = static_generator.generate() as BVHGeometry;
+	// 			generate_geometry.boundsTree = new MeshBVH(generate_geometry, { lazyGeneration: false } as MeshBVHOptions);
+
+	// 			this.colliders.push(new Mesh(generate_geometry));
+	// 			this.scene.add(this.collision_scene);
+	// 			resolve();
+	// 		});
+
+	// 	});
+
+	// }
+
+	// 調整 _loadPlaygroundCollisionScene 方法
+	private async _loadPlaygroundCollisionScene(SCENE_URL: string): Promise<void> {
+		return new Promise(resolve => {
+			this.loader.gltf_loader.load(SCENE_URL, (gltf) => {
+				// 創建一組 Mesh 節點
+				const nodes = { nodes: gltf.scene.children.filter(child => child instanceof Mesh) as Mesh[] };
+				this.collision_scene = new Group();
+				// 創建 Map 實例
+				this.map = new Map(this.scene, nodes, this.collision_scene, this.colliders);
+				this.map.initCollisionScene(); // 初始化時更新碰撞場景
+
+				// this.colliders.push(...this.map.colliders);
+				this.scene.add(this.map.collision_scene);
+				resolve();
+			});
+		});
+	}
 
 	/*
 	* 載入地圖並綁定碰撞
@@ -437,6 +511,26 @@ export default class Environment {
 						this.raycast_objects.push(item);
 					});
 				}
+				else if (this.mode === "Playground") {
+					// console.log(this.collision_scene);
+					// const itemsToRemove: Object3D[] = [];
+					// this.collision_scene.traverse(item => {
+					// 	// 收集所有要刪除的物體
+
+					// 	if (item.name === "x_player_spawn") {
+					// 		itemsToRemove.push(item);
+					// 	}
+
+
+					// 	// 從父級中刪除這些物體
+
+					// });
+					// itemsToRemove.forEach(item => {
+					// 	if (item.parent) {
+					// 		item.parent.remove(item);
+					// 	}
+					// });
+				}
 				else {
 					this.collision_scene.traverse(item => {
 						// console.log(item);
@@ -450,9 +544,7 @@ export default class Environment {
 
 
 
-				// this.collision_scene.position.x += 20;
 				this.collision_scene.updateMatrixWorld(true);
-
 
 				const static_generator = new StaticGeometryGenerator(this.collision_scene);
 				static_generator.attributes = ["position"];
@@ -723,6 +815,10 @@ export default class Environment {
 				this.teleporterManager.updateArounds();
 				this.teleporterManager.updatePatical();
 			}
+		}
+		if (this.mode === "Playground") {
+			// 更新和渲染
+			this.map!.update();
 		}
 	}
 }

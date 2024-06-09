@@ -58,6 +58,7 @@ export default class World {
 		if(mode === "Plaza") portalPosition = new Vector3(...portalPositions[0]);
 		else if (mode === "Entertainment") portalPosition = new Vector3(...portalPositions[1]);
 		else if(mode === "Grallery") portalPosition = new Vector3(...portalPositions[2]);
+		else if(mode === "Playground") portalPosition = new Vector3(...portalPositions[3]);
 		this.environment = new Environment({
 			scene: this.scene,
 			loader: this.loader,

@@ -6,8 +6,7 @@ import {
 	// Plaza
 	PLAZA_CITY_SCENE_URL, PLAZA_EFFECT_SCENE_URL, PLAZA_PORTAL_SCENE_URL,
 	// 傳送門 雨 雪
-	SCENE_BACKGROUND1_TEXTURE, PORTAL_PERLINNOISE_TEXTURE, PORTAL_SPARKNOISE_TEXTURE,
-	PORTAL_WATERURBURBULENCE_TEXTURE, PORTAL_NOISE_TEXTURE,
+	SCENE_BACKGROUND1_TEXTURE,
 	// grallery
 	GALLETY_SCENE_URL, STATIC_SCENE_URL, BOARD_TEXTURES, BOARDS_INFO,
 	// playground
@@ -15,8 +14,8 @@ import {
 } from "../Constants";
 import {
 	Scene, AmbientLight, DirectionalLight, EquirectangularReflectionMapping, Fog, Group, HemisphereLight,
-	Mesh, PlaneGeometry, Vector2, MeshBasicMaterial, DoubleSide, Object3D, MeshLambertMaterial, PointLight,
-	ShaderMaterial, Vector3, CircleGeometry, BufferGeometry, BufferAttribute, Texture,
+	Mesh, PlaneGeometry, Vector2, MeshBasicMaterial, Object3D, MeshLambertMaterial, PointLight,
+	ShaderMaterial, Vector3, Texture,
 
 	//grallery
 	SRGBColorSpace, Material, BoxGeometry,

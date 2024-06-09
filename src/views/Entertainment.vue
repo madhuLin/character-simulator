@@ -7,9 +7,8 @@
 
     <load-progress v-model="percentage" :text="loading_text" @on-enter="onEnterApp" />
 
-    <Tool v-if="isToolVisible" @effetParams="handleToolCompleted"
-        @close="() => isToolVisible = false"></Tool>
-        <PreviewTooltip ref="c1" />
+    <Tool v-if="isToolVisible" @effetParams="handleToolCompleted" @close="() => isToolVisible = false"></Tool>
+    <PreviewTooltip ref="c1" />
 </template>
 
 <script setup lang="ts">
@@ -18,8 +17,10 @@ import NesGameDialog from "@/components/NesGameDialog.vue";
 import NotifyTips from "@/components/NotifyTips.vue";
 import Core from "@/application/core";
 import { onMounted, ref } from "vue";
-import { ON_INTERSECT_TRIGGER, ON_INTERSECT_TRIGGER_STOP, ON_KEY_DOWN, ON_LOAD_PROGRESS, 
-    ON_IN_PORTAL, ON_SHOW_TOOLTIP, ON_HIDE_TOOLTIP } from "@/application/Constants";
+import {
+    ON_INTERSECT_TRIGGER, ON_INTERSECT_TRIGGER_STOP, ON_KEY_DOWN, ON_LOAD_PROGRESS,
+    ON_IN_PORTAL, ON_SHOW_TOOLTIP, ON_HIDE_TOOLTIP
+} from "@/application/Constants";
 import type { InteractionMesh } from "@/application/interactionDetection/types";
 import { PointerLockControls } from "three-stdlib";
 const notify_ref = ref<InstanceType<typeof NotifyTips>>();
@@ -31,7 +32,7 @@ const store = useStore();
 import PreviewTooltip from '@/components/PreviewTooltip.vue';
 // 引用子组件
 const c1 = ref();
-const showToolTip = (eventData: any) =>{
+const showToolTip = (eventData: any) => {
     eventData = eventData[0];
     c1.value?.showPreviewTooltip(eventData.msg, eventData.tips);
 };
@@ -43,12 +44,12 @@ import Tool from "@/components/Tool.vue";
 const isToolVisible = ref<boolean>(false);
 
 const toggleToolVisibility = () => {
-        isToolVisible.value = !isToolVisible.value;
-        // event.preventDefault(); // 防止 Tab 鍵的默認行為
+    isToolVisible.value = !isToolVisible.value;
+    // event.preventDefault(); // 防止 Tab 鍵的默認行為
 };
 
 // 定義工具攔事件處理方法
-const handleToolCompleted = (value: { timeOfDay: string, weather: string, mode: string, speed: number }) => {
+const handleToolCompleted = (value: { timeOfDay: string, weather: string, mode: string, speed: number, music: string }) => {
     isToolVisible.value = false;
     //設定時間
     if (value.timeOfDay == "morning") {
@@ -82,6 +83,12 @@ const handleToolCompleted = (value: { timeOfDay: string, weather: string, mode: 
     if(value.speed) {
         core!.world.character.setSpeed(value.speed);
     }
+
+    //設定音樂
+    if(value.music) {
+        console.log("value.music", value.music);
+        core!.world.audio.setAudioUrl(value.music);
+    }        
 };
 
 // 加載相關
@@ -107,16 +114,16 @@ const onIntersectTriggerStop = () => {
 //鍵盤事件
 const onKeyDown = ([key]: [key: string]) => {
     if (core) {
-        if(key === "KeyF") {
+        if (key === "KeyF") {
             const intersect = core.world.interaction_detection.getIntersectObj();
             if (intersect) {
                 handleInteraction(intersect);
             }
         }
-        if(key === "KeyT") {
+        if (key === "KeyT") {
             toggleToolVisibility();
         }
-        
+
     }
 };
 
@@ -167,14 +174,17 @@ const onLoadProgress = ([{ url, loaded, total }]: [{ url: string, loaded: number
 
 const onEnterApp = () => {
     if (core) {
-        // 进入时才允许控制角色
+        // 進入時才能控制角色
         core.control.enabled();
         if (core.controls instanceof PointerLockControls) {
             core.controls.lock();
         }
-        // 音频自动播放受限于网页的初始化交互，因此进入后播放即可
-        //   core.world.audio.playAudio();
-        // 注销应用加载监听事件
+
+        // 場景模型載入完畢後將場景中需要光線投射偵測的物件傳入給rayCasterControls
+        core.world.ray_caster_controls.bindClickRayCastObj(core.world.environment.raycast_objects);
+        // 音訊自動播放受限於網頁的初始化交互，因此進入後播放即可
+        core.world.audio.playAudio();
+        // 登出應用程式載入監聽事件
         core.emitter.$off(ON_LOAD_PROGRESS);
     }
 };

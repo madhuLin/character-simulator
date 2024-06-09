@@ -1,6 +1,5 @@
 import Environment from "../environment";
 import Character from "../character";
-import Character2 from "../character/index2";
 import InteractionDetection from "../interactionDetection";
 import Audio from "../audio";
 import { PerspectiveCamera, Scene, Mesh, Vector3 } from "three";
@@ -53,7 +52,6 @@ export default class World {
 		this.loader = loader;
 		this.emitter = emitter;
 		this.mode = mode;
-
 		let portalPosition: Vector3 | undefined;
 		if(mode === "Plaza") portalPosition = new Vector3(...portalPositions[0]);
 		else if (mode === "Entertainment") portalPosition = new Vector3(...portalPositions[1]);
@@ -87,7 +85,7 @@ export default class World {
 		this.audio = new Audio({
 			scene: this.scene,
 			camera: this.camera,
-			loader: this.loader
+			loader: this.loader,
 		});
 
 		this.ray_caster_controls = new RayCasterControls({

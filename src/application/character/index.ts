@@ -155,7 +155,7 @@ export default class Character {
 		if (this.mode !== "Plaza") this._enterCircle();
 	}
 
-	setMode(mode: String) {
+	setMode(mode: string) {
 		this.characterMode = mode;
 	}
 

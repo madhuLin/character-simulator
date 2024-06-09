@@ -17,7 +17,7 @@ import LoadProgress from "@/components/LoadProgress.vue";
 import NesGameDialog from "@/components/NesGameDialog.vue";
 import NotifyTips from "@/components/NotifyTips.vue";
 import Core from "@/application/core";
-import { onMounted, ref, onBeforeUnmount, reactive } from "vue";
+import { onMounted, ref } from "vue";
 import {
     ON_INTERSECT_TRIGGER, ON_INTERSECT_TRIGGER_STOP, ON_KEY_DOWN, ON_LOAD_PROGRESS,
     ON_CLICK_RAY_CAST, ON_SHOW_TOOLTIP, ON_HIDE_TOOLTIP
@@ -52,7 +52,7 @@ const toggleToolVisibility = () => {
 
 
 // 定義工具攔事件處理方法
-const handleToolCompleted = (value: { timeOfDay: string, weather: string, mode: string, speed: number }) => {
+const handleToolCompleted = (value: { timeOfDay: string, weather: string, mode: string, speed: number, music: string }) => {
     isToolVisible.value = false;
     //設定時間
     if (value.timeOfDay == "morning") {
@@ -86,6 +86,12 @@ const handleToolCompleted = (value: { timeOfDay: string, weather: string, mode: 
     if(value.speed) {
         core!.world.character.setSpeed(value.speed);
     }
+
+    //設定音樂
+    if(value.music) {
+        console.log("value.music", value.music);
+        core!.world.audio.setAudioUrl(value.music);
+    }        
 };
 
 
@@ -186,7 +192,7 @@ const onEnterApp = () => {
         // 場景模型載入完畢後將場景中需要光線投射偵測的物件傳入給rayCasterControls
         core.world.ray_caster_controls.bindClickRayCastObj(core.world.environment.raycast_objects);
         // 音訊自動播放受限於網頁的初始化交互，因此進入後播放即可
-        // core.world.audio.playAudio();
+        core.world.audio.playAudio();
         // 登出應用程式載入監聽事件
         core.emitter.$off(ON_LOAD_PROGRESS);
     }

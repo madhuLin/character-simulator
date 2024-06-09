@@ -6,13 +6,16 @@
       <div class="bg-white dark:bg-slate-800 rounded-lg px-6 py-4 ring-1 ring-slate-900/5 shadow-xl mb-4">
         <h3 class="text-slate-900 dark:text-white mb-2 text-base font-medium tracking-tight">選擇時間</h3>
         <div class="flex space-x-4">
-          <button @click="selectTimeOfDay('morning')" class="flex-1 p-2 bg-blue-100 rounded shadow" :class="{ 'bg-blue-400': selectedTimeOfDay === 'morning' }">
+          <button @click="selectTimeOfDay('morning')" class="flex-1 p-2 bg-blue-100 rounded shadow"
+            :class="{ 'bg-blue-400': selectedTimeOfDay === 'morning' }">
             <img src="@/assets/vue/morning.png" alt="白天" class="mx-auto w-24 h-24">
           </button>
-          <button @click="selectTimeOfDay('afternoon')" class="flex-1 p-2 bg-blue-100 rounded shadow" :class="{ 'bg-blue-400': selectedTimeOfDay === 'afternoon' }" >
+          <button @click="selectTimeOfDay('afternoon')" class="flex-1 p-2 bg-blue-100 rounded shadow"
+            :class="{ 'bg-blue-400': selectedTimeOfDay === 'afternoon' }">
             <img src="@/assets/vue/afternoon.png" alt="黃昏" class="mx-auto w-24 h-24">
           </button>
-          <button @click="selectTimeOfDay('night')" class="flex-1 p-2 bg-blue-100 rounded shadow" :class="{ 'bg-blue-400': selectedTimeOfDay === 'night' }">
+          <button @click="selectTimeOfDay('night')" class="flex-1 p-2 bg-blue-100 rounded shadow"
+            :class="{ 'bg-blue-400': selectedTimeOfDay === 'night' }">
             <img src="@/assets/vue/night.png" alt="晚上" class="mx-auto w-24 h-24">
           </button>
         </div>
@@ -21,27 +24,52 @@
       <div class="bg-white dark:bg-slate-800 rounded-lg px-6 py-4 ring-1 ring-slate-900/5 shadow-xl mb-4">
         <h3 class="text-slate-900 dark:text-white mb-2 text-base font-medium tracking-tight">選擇天氣</h3>
         <div class="flex space-x-4">
-          <button @click="selectWeather('sunny')" class="flex-1 p-2 bg-green-100 rounded shadow" :class="{ 'bg-green-400': selectedWeather === 'sunny' }">
+          <button @click="selectWeather('sunny')" class="flex-1 p-2 bg-green-100 rounded shadow"
+            :class="{ 'bg-green-400': selectedWeather === 'sunny' }">
             <img src="@/assets/vue/sunny.png" alt="晴天" class="mx-auto w-24 h-24">
           </button>
-          <button @click="selectWeather('rainy')" class="flex-1 p-2 bg-green-100 rounded shadow" :class="{ 'bg-green-400': selectedWeather === 'rainy' }">
+          <button @click="selectWeather('rainy')" class="flex-1 p-2 bg-green-100 rounded shadow"
+            :class="{ 'bg-green-400': selectedWeather === 'rainy' }">
             <img src="@/assets/vue/rainy.png" alt="雨天" class="mx-auto w-24 h-24">
           </button>
-          <button @click="selectWeather('snowy')" class="flex-1 p-2 bg-green-100 rounded shadow" :class="{ 'bg-green-400': selectedWeather === 'snowy' }">
+          <button @click="selectWeather('snowy')" class="flex-1 p-2 bg-green-100 rounded shadow"
+            :class="{ 'bg-green-400': selectedWeather === 'snowy' }">
             <img src="@/assets/vue/snowy.png" alt="雪天" class="mx-auto w-24 h-24">
           </button>
         </div>
       </div>
 
+      <!-- 音樂選擇 -->
+      <div class="bg-white dark:bg-slate-800 rounded-lg px-6 py-4 ring-1 ring-slate-900/5 shadow-xl mb-4">
+        <h3 class="text-slate-900 dark:text-white mb-2 text-base font-medium tracking-tight">選擇音樂</h3>
+        <div class="flex space-x-4">
+          <button @click="selectMusic('sunny')" class="flex-1 p-2 bg-yellow-100 rounded shadow"
+            :class="{ 'bg-yellow-400': selectedMusic === 'sunny' }">
+            Sunny
+          </button>
+          <button @click="selectMusic('sad')" class="flex-1 p-2 bg-yellow-100 rounded shadow"
+            :class="{ 'bg-yellow-400': selectedMusic === 'sad' }">
+            Sad
+          </button>
+          <button @click="selectMusic('gta')" class="flex-1 p-2 bg-yellow-100 rounded shadow"
+            :class="{ 'bg-yellow-400': selectedMusic === 'gta' }">
+            Gta
+          </button>
+          <!-- 在這裡添加更多音樂選項 -->
+        </div>
+      </div>
 
-       <!-- 模式選擇 -->
-       <div class="bg-white dark:bg-slate-800 rounded-lg px-6 py-4 ring-1 ring-slate-900/5 shadow-xl mb-4">
+
+      <!-- 模式選擇 -->
+      <div class="bg-white dark:bg-slate-800 rounded-lg px-6 py-4 ring-1 ring-slate-900/5 shadow-xl mb-4">
         <h3 class="text-slate-900 dark:text-white mb-2 text-base font-medium tracking-tight">選擇模式</h3>
         <div class="flex space-x-4">
-          <button @click="selectMode('walk')" class="flex-1 p-2 bg-red-100 rounded shadow" :class="{ 'bg-red-400': selectedCharacterMode === 'walk' }">
+          <button @click="selectMode('walk')" class="flex-1 p-2 bg-red-100 rounded shadow"
+            :class="{ 'bg-red-400': selectedCharacterMode === 'walk' }">
             行走模式
           </button>
-          <button @click="selectMode('fly')" class="flex-1 p-2 bg-red-100 rounded shadow" :class="{ 'bg-red-400': selectedCharacterMode === 'fly' }">
+          <button @click="selectMode('fly')" class="flex-1 p-2 bg-red-100 rounded shadow"
+            :class="{ 'bg-red-400': selectedCharacterMode === 'fly' }">
             飛行模式
           </button>
         </div>
@@ -66,8 +94,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted} from 'vue';
-import {useStore} from '@/store/index.ts'
+import { ref, onMounted } from 'vue';
+import { useStore } from '@/store/index.ts'
 // // 接收父组件传递的 sceneValue
 // const props = defineProps({sceneValue: Object});
 
@@ -103,11 +131,17 @@ const selectWeather = (weather) => {
 
 const selectMode = (mode) => {
   selectedCharacterMode.value = mode;
-  
+
 };
 
 const selectTimeOfDay = (timeOfDay) => {
-  selectedTimeOfDay.value = timeOfDay;  
+  selectedTimeOfDay.value = timeOfDay;
+};
+
+const selectedMusic = ref('');
+
+const selectMusic = (music) => {
+  selectedMusic.value = music;
 };
 
 const emit = defineEmits(['effetParams']);
@@ -122,7 +156,8 @@ const handleToolCompleted = () => {
     weather: selectedWeather.value,
     mode: selectedCharacterMode.value,
     timeOfDay: selectedTimeOfDay.value,
-    speed: Number(selectedSpeed.value)
+    speed: Number(selectedSpeed.value),
+    music: selectedMusic.value,
   }
   emit('effetParams', params);
 };

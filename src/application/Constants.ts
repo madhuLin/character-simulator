@@ -18,10 +18,10 @@ export const WATER_NORMAL1_TEXTURE = new URL("../assets/img/Water_1_M_Normal.jpg
 export const WATER_NORMAL2_TEXTURE = new URL("../assets/img/Water_2_M_Normal.jpg", import.meta.url).href;
 
 const pathImg = "../assets/shaders/images/";
-export const PORTAL_PERLINNOISE_TEXTURE = new URL(pathImg + "perlinnoise.png", import.meta.url).href;
-export const PORTAL_SPARKNOISE_TEXTURE = new URL(pathImg + "sparknoise.png", import.meta.url).href;
-export const PORTAL_WATERURBURBULENCE_TEXTURE = new URL(pathImg + "waterturbulence.png", import.meta.url).href;
-export const PORTAL_NOISE_TEXTURE = new URL(pathImg + "noise.png", import.meta.url).href;
+// export const PORTAL_PERLINNOISE_TEXTURE = new URL(pathImg + "perlinnoise.png", import.meta.url).href;
+// export const PORTAL_SPARKNOISE_TEXTURE = new URL(pathImg + "sparknoise.png", import.meta.url).href;
+// export const PORTAL_WATERURBURBULENCE_TEXTURE = new URL(pathImg + "waterturbulence.png", import.meta.url).href;
+// export const PORTAL_NOISE_TEXTURE = new URL(pathImg + "noise.png", import.meta.url).href;
 const portalPath = "../assets/shaders/portal1/";
 export const PORTAL_MAGIC_TEXTURE = new URL(portalPath + "magic.png", import.meta.url).href;
 export const PORTAL_AROUND_TEXTURE = new URL(portalPath + "guangyun.png", import.meta.url).href;
@@ -53,7 +53,9 @@ export const NES_GAME_SRC4 = new URL("../assets/nes/Mitsume ga Tooru (Japan).nes
 /*
 * Audio  Resources
 * */
-export const AUDIO_URL = new URL("../assets/audio/Midnight City.m4a", import.meta.url).href;
+export const AUDIO_URL = new URL("../assets/audio/Sunny.m4a", import.meta.url).href;
+export const AUDIO_URL1 = new URL("../assets/audio/Break Your Little Heart.m4a", import.meta.url).href;
+export const AUDIO_URL2 = new URL("../assets/audio/Midnight City.m4a", import.meta.url).href;
 
 
 //mode == Plaza

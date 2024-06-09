@@ -28,10 +28,6 @@ let boardInfo = reactive({
     describe: '',
     img_src: ''
 });
-// const boardsTitle = ref('');
-// const boardsAuthor = ref('');
-// const boardsDescribe = ref('');
-// const boardsImgSrc = ref('');
 
 const showBoardsBox = (title: string, author: string, describe: string, img_src: string) => {
     if (isBoardsInfoVisible.value) return;

@@ -89,7 +89,6 @@ const handleToolCompleted = (value: { timeOfDay: string, weather: string, mode: 
 
     //設定音樂
     if(value.music) {
-        console.log("value.music", value.music);
         core!.world.audio.setAudioUrl(value.music);
     }        
 };
@@ -175,7 +174,6 @@ const onLoadProgress = ([{ url, loaded, total }]: [{ url: string, loaded: number
 
 // 跳轉場景
 const onJumpScene = (map: string) => {
-    console.log("jump scene", map);
     if(map[0] === "Entertainment") router.push("/entertainment");
     else if(map[0] === "Grallery") router.push("/gallery");
     else if(map[0] === "Playground") router.push("/playground");
@@ -199,7 +197,6 @@ const onEnterApp = () => {
 };
 
 onMounted(() => {
-    console.log("mounted");
     core = new Core("Plaza");
     core.render();
 
@@ -212,7 +209,7 @@ onMounted(() => {
     core.emitter.$on(ON_SHOW_TOOLTIP, showToolTip);
     core.emitter.$on(ON_HIDE_TOOLTIP, c1.value?.hidePreviewTooltip);
 
-    console.log(store.selectedTimeOfDay, store.selectedWeather);
+    // 設定初始時間、天氣、角色模式、速度、音樂
     core.world.environment.setTime(store.selectedTimeOfDay);
     core.world.environment.setWeather(store.selectedWeather);
     core.world.character.setMode(store.selectedCharacterMode);

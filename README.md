@@ -1,8 +1,11 @@
-幫我修改readme，我
 <h1 align="center">《virtual city》</h1>
 
 <p align="center">
-<img src="./cover.png" alt="" />
+<img src="src/assets/cover.png" alt="" />
+<img src="src/assets/plaza.png" alt="" />
+<img src="src/assets/gallery.png" alt="" />
+<img src="src/assets/playground.png" alt="" />
+
 </p>
 
 <p align="center">
@@ -22,6 +25,8 @@
 
 切換天氣、時間、角色模式、角色速度: `T`
 
+飛行模式下: `Q`上升、 `E`下降
+
 傳送到美術館、遊樂場、遊戲廳: `點擊由廣場傳送門傳送`
 
 ## 特色
@@ -36,7 +41,7 @@
 - [x] 美術館、遊樂場、廣場等場景
 
 ## 說明
-雖然本專案採用`Vue3` + `TypeScript` + `three.js` + `tailwindcss` 等技術開發。
+雖然本專案採用`Vue3` + `TypeScript` + `three.js` + `tailwindcss` + `paina` 等技術開發。
 
 ## 目錄結構說明
 ```text
@@ -68,6 +73,8 @@
 | | │── img # 圖片文件
 | | │── models # 模型文件
 | | │── nes # nes遊戲文件
+| | ├── shaders # 傳送門shader文件
+| | ├── vue # 前端圖片文件
 | | └── main.css # 全域樣式
 │ ├── components # vue組件
 | | │── BoardsInfo.vue # 美術館畫框組件
@@ -75,7 +82,7 @@
 | | │── NesGameDialog.vue # nes遊戲彈跳窗組件（運行nes遊戲）
 | | │── NotifyTips.vue # 互動提示元件
 | | │── PreviewTooltips.vue # 雷射提示組件
-| | └── Tool.vue # 工具組件（時間、天氣、角色模式、角色速度等）
+| | └── Tool.vue # 工具組件（時間、天氣、角色模式、角色、音樂等控制）
 │ ├── router # 路由管理
 | ├── views # 頁面管理
 | | ├── Entertainment.vue # 娛樂頁面

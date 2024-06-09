@@ -87,7 +87,6 @@ export default class Environment {
 		this.portalPosition = portalPosition; //傳送門位置
 		this.clearEffects();
 		if (this.mode === "Plaza") {
-			console.log("Plaza");
 			this._loadEnvironment(PLAZA_CITY_SCENE_URL);
 		}
 		else if (this.mode === "Entertainment") {
@@ -729,7 +728,6 @@ export default class Environment {
 
 
 	public setTime(timeOfDay: string): void {
-		console.log(timeOfDay);
 		// 清除舊場景效果
 		this.clearEffects();
 		if (timeOfDay == "morning") {
@@ -771,7 +769,6 @@ export default class Environment {
 			this.rainScene = new RainScene(this.scene);
 		}
 		else if (weather === "snowy") {
-			console.log("set snow");
 			this.weather = weather;
 			this.snowScene = new SnowScene(this.scene);
 		}

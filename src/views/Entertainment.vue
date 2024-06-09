@@ -86,7 +86,7 @@ const handleToolCompleted = (value: { timeOfDay: string, weather: string, mode: 
 
     //設定音樂
     if(value.music) {
-        console.log("value.music", value.music);
+        // console.log("value.music", value.music);
         core!.world.audio.setAudioUrl(value.music);
     }        
 };

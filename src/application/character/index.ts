@@ -107,7 +107,6 @@ export default class Character {
 			...params
 		};
 		console.log("Character");
-		// console.log("params.portalPosition",params.portalPosition);
 		this.scene = params.scene;
 		this.camera = params.camera;
 		this.controls = params.controls as OrbitControls;
@@ -271,8 +270,8 @@ export default class Character {
 			})
 		);
 
-		// this.character_shape.visible = false;
-		this.character_shape.visible = true;
+		this.character_shape.visible = false;
+		// this.character_shape.visible = true;
 
 		this.scene.add(this.character_shape);
 	}
@@ -295,9 +294,9 @@ export default class Character {
 		if (key_code === "KeyV") {
 			this._switchPersonView();
 		}
-		if (key_code === "KeyT") {
-			this.printPosition();
-		}
+		// if (key_code === "KeyT") {
+		// 	this.printPosition();
+		// }
 	}
 	private printPosition() {
 		console.log(this.character.position);

@@ -44,7 +44,7 @@ const c2 = ref();
 
 // 定義互動盒子點擊事件
 const mouseClickHandler = (eventData: any) => {
-    console.log("mouseClickHandler");
+    // console.log("mouseClickHandler");
     eventData = eventData[0];
     c2.value?.showBoardsBox(eventData.title, eventData.author, eventData.describe, eventData.src);
 };
@@ -101,7 +101,6 @@ const handleToolCompleted = (value: { timeOfDay: string, weather: string, mode: 
 
     //設定音樂
     if(value.music) {
-        console.log("value.music", value.music);
         core!.world.audio.setAudioUrl(value.music);
     }        
 };

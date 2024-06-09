@@ -1,8 +1,12 @@
-import { Scene, PerspectiveCamera, AnimationAction, AnimationMixer, 
-	Box3, Line3, Matrix4, Mesh, Group, Object3D, Quaternion, Raycaster, 
-	Vector3, BoxGeometry, MeshBasicMaterial } from "three";
-import { CHARACTER_IDLE_ACTION_URL, CHARACTER_JUMP_ACTION_URL, CHARACTER_URL,
-	 CHARACTER_WALK_ACTION_URL, ON_KEY_DOWN, CHARACTER_URL1, CHARACTER_URL2, ON_IN_PORTAL  } from "@/application/Constants";
+import {
+	Scene, PerspectiveCamera, AnimationAction, AnimationMixer,
+	Box3, Line3, Matrix4, Mesh, Group, Object3D, Quaternion, Raycaster,
+	Vector3, BoxGeometry, MeshBasicMaterial
+} from "three";
+import {
+	CHARACTER_IDLE_ACTION_URL, CHARACTER_JUMP_ACTION_URL, CHARACTER_URL,
+	CHARACTER_WALK_ACTION_URL, ON_KEY_DOWN, CHARACTER_URL1, CHARACTER_URL2, ON_IN_PORTAL
+} from "@/application/Constants";
 import { isBVHGeometry, isMesh } from "../utils/typeAssert";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Control from "../control";
@@ -41,9 +45,9 @@ const default_params: OptionalParams = {
 
 	// reset_position: new Vector3(0, 5, 0),
 
-	reset_y: -25,
+	reset_y: -15,
 	speed: 3,
-	jump_height: 12,
+	jump_height: 10,
 	gravity: -30
 };
 
@@ -95,6 +99,7 @@ export default class Character {
 	private portalPosition: Vector3 | undefined; // 傳送點位置
 	private mode: String; //哪地圖
 	private isCharacterInCircle: boolean = false; // 是否在傳送點範圍內
+	private characterMode: string = "walk"; // false walk true fly
 
 	constructor(params: PlayerParams) {
 		params = {
@@ -147,7 +152,15 @@ export default class Character {
 
 		this._checkReset();
 
-		if(this.mode !== "Plaza") this._enterCircle();
+		if (this.mode !== "Plaza") this._enterCircle();
+	}
+
+	setMode(mode: String) {
+		this.characterMode = mode;
+	}
+
+	setSpeed(speed: number) {
+		this.speed = speed;
 	}
 
 	//計算距離 檢查是否在傳送點範圍內
@@ -159,34 +172,34 @@ export default class Character {
 
 	//傳送
 	private _enterCircle() {
-        if (this._checkCharacterInRange()) {
-            this.isCharacterInCircle = true;
-            // 開始計時3秒鐘
-            const teleportTimeout = setTimeout(() => {
-                if (this.isCharacterInCircle) {
-                    this.teleportCharacter();
+		if (this._checkCharacterInRange()) {
+			this.isCharacterInCircle = true;
+			// 開始計時3秒鐘
+			const teleportTimeout = setTimeout(() => {
+				if (this.isCharacterInCircle) {
+					this.teleportCharacter();
 					clearTimeout(teleportTimeout);
-                }
-            }, 3000);
-        }
+				}
+			}, 3000);
+		}
 		else {
 			this.isCharacterInCircle = false;
 		}
-    }
+	}
 
 	//傳送邏輯
-    teleportCharacter() {
-        if (this.character) {
-            // 傳送邏輯實現
-            console.log(`${this.character.name} has been teleported!`);
+	teleportCharacter() {
+		if (this.character) {
+			// 傳送邏輯實現
+			console.log(`${this.character.name} has been teleported!`);
 			this.isCharacterInCircle = false;
 			this.character.position.copy(this.reset_position);
-            this.emitter.$emit(ON_IN_PORTAL);
-        }
-    }
+			this.emitter.$emit(ON_IN_PORTAL);
+		}
+	}
 
 	/*
-	* 添加角色模型&人物动画
+	* 添加角色模型&人物動畫
 	* */
 	private async _createCharacter() {
 		const model = (await this.loader.gltf_loader.loadAsync(CHARACTER_URL)).scene;
@@ -195,9 +208,9 @@ export default class Character {
 		const walk = (await this.loader.fbx_loader.loadAsync(CHARACTER_WALK_ACTION_URL)).animations[0];
 		const idle = (await this.loader.fbx_loader.loadAsync(CHARACTER_IDLE_ACTION_URL)).animations[0];
 		const jump = (await this.loader.fbx_loader.loadAsync(CHARACTER_JUMP_ACTION_URL)).animations[0];
-		
-		
-		
+
+
+
 		this.character = model;
 		// console.log(model.children);
 		// console.log(this.character.children);
@@ -207,7 +220,7 @@ export default class Character {
 		this.character.scale.set(scale, scale, scale);
 		// this.character.position.set(0, -5, 0);
 
-		
+
 		// 確保骨架與模型同步縮放
 		// 遍歷模型的所有子對象
 		// this.character.traverse((child) => {
@@ -247,7 +260,7 @@ export default class Character {
 	}
 
 	/*
-	* 创建角色包围盒
+	* 創建角色包圍盒
 	* */
 	private _createCharacterShape() {
 		this.character_shape = new Mesh(
@@ -265,7 +278,7 @@ export default class Character {
 	}
 
 	/*
-	* 更新角色包围盒当前位置
+	* 更新角色包圍盒目前位置
 	* */
 	private _updateCharacterShape() {
 		if (this.character_shape && this.character) {
@@ -276,13 +289,13 @@ export default class Character {
 	}
 
 	private _onKeyDown([key_code]: [keycode: string]) {
-		if (key_code === "Space") {
+		if (key_code === "Space" && this.characterMode === "walk") {
 			this._characterJump();
 		}
 		if (key_code === "KeyV") {
 			this._switchPersonView();
 		}
-		if(key_code === "KeyT") {
+		if (key_code === "KeyT") {
 			this.printPosition();
 		}
 	}
@@ -303,14 +316,28 @@ export default class Character {
 	}
 
 	/*
-	* 更新角色移动、方位朝向、动作
+	* 更新角色移動、方位朝向、動作
 	* */
 	private _updateCharacter(delta_time: number) {
-		if (this.player_is_on_ground) {
-			this.velocity.y = delta_time * this.gravity;
-		} else {
-			this.velocity.y += delta_time * this.gravity;
+		if (this.characterMode === "walk") {
+			if (this.player_is_on_ground) {
+				this.velocity.y = delta_time * this.gravity;
+			} else {
+				this.velocity.y += delta_time * this.gravity;
+			}
 		}
+		else {
+			// 飛行模式
+			if (this.control.key_status["KeyQ"]) {
+				this.character.position.y += this.speed * delta_time;
+			}
+			if (this.control.key_status["KeyE"]) {
+				this.character.position.y -= this.speed * delta_time;
+			}
+		}
+
+
+
 		this.character.position.addScaledVector(this.velocity, delta_time);
 
 		this.updateDirection();
@@ -319,6 +346,7 @@ export default class Character {
 
 		// 控制移动
 		const angle = this.controls.getAzimuthalAngle();
+
 		if (this.control.key_status["KeyW"]) {
 			this.temp_vector.set(0, 0, -1).applyAxisAngle(this.up_vector, angle);
 			this.character.position.addScaledVector(this.temp_vector, this.speed * delta_time);
@@ -391,7 +419,7 @@ export default class Character {
 	}
 
 	/*
-	* 控制角色动作
+	* 控制角色動作
 	* */
 	private updateAction(delta_time: number) {
 		this.mixer?.update(delta_time);
@@ -413,7 +441,7 @@ export default class Character {
 	}
 
 	/*
-	* 计算角色与场景的碰撞
+	* 計算角色與場景的碰撞
 	* */
 	private _checkCollision(delta_time: number, scene_colliders: Mesh[]) {
 
@@ -485,7 +513,7 @@ export default class Character {
 	}
 
 	/*
-	* 相机碰撞检测优化
+	* 相機碰撞偵測優化
 	* */
 	private _checkCameraCollision(colliders: Mesh[]) {
 		if (!this.is_first_person) {
@@ -508,7 +536,7 @@ export default class Character {
 	}
 
 	/*
-	* 掉落地图检测
+	* 掉落地圖檢測
 	* */
 	private _checkReset() {
 		if (this.character.position.y < this.reset_y) {
@@ -526,7 +554,7 @@ export default class Character {
 	}
 
 	/*
-	* 切换视角
+	* 切換視角
 	* */
 	private _switchPersonView() {
 		this.is_first_person = !this.is_first_person;
@@ -539,7 +567,7 @@ export default class Character {
 	}
 
 	/*
-	* 角色跳跃
+	* 角色跳躍
 	* */
 	private _characterJump() {
 		if (this.player_is_on_ground) {

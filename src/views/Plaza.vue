@@ -50,26 +50,11 @@ const toggleToolVisibility = () => {
     // event.preventDefault(); // 防止 Tab 鍵的默認行為
 };
 
-// interface SceneValue {
-//     timeOfDay: string;
-//     weather: string;
-//     character: string;
-// }
 
-// // 創建初始 sceneValue 值
-// let sceneValue = reactive<SceneValue>({
-//     timeOfDay: "morning",
-//     weather: "sunny",
-//     character: "boy"
-// });
-
-// 工具攔截按键事件
-const handleToolCompleted = (value: { timeOfDay: string, weather: string, character: string }) => {
+// 定義工具攔事件處理方法
+const handleToolCompleted = (value: { timeOfDay: string, weather: string, mode: string, speed: number }) => {
     isToolVisible.value = false;
-    console.log(value);
-    // sceneValue.timeOfDay = value.timeOfDay;
-    // sceneValue.weather = value.weather;
-    // sceneValue.character = value.character;
+    //設定時間
     if (value.timeOfDay == "morning") {
         core!.world.environment.setTime("morning");
     }
@@ -79,7 +64,7 @@ const handleToolCompleted = (value: { timeOfDay: string, weather: string, charac
     else if (value.timeOfDay == "night") {
         core!.world.environment.setTime("night");
     }
-
+    //設定天氣
     if (value.weather == "sunny") {
         core!.world.environment.setWeather("sunny");
     }
@@ -88,6 +73,18 @@ const handleToolCompleted = (value: { timeOfDay: string, weather: string, charac
     }
     else if (value.weather == "snowy") {
         core!.world.environment.setWeather("snowy");
+    }
+
+    //設定角色模式
+    if(value.mode == "walk") {
+        core!.world.character.setMode("walk");
+    }
+    else if(value.mode == "fly") {
+        core!.world.character.setMode("fly");
+    }
+    //設定速度
+    if(value.speed) {
+        core!.world.character.setSpeed(value.speed);
     }
 };
 
@@ -175,6 +172,7 @@ const onJumpScene = (map: string) => {
     console.log("jump scene", map);
     if(map[0] === "Entertainment") router.push("/entertainment");
     else if(map[0] === "Grallery") router.push("/gallery");
+    else if(map[0] === "Playground") router.push("/playground");
 };
 
 const onEnterApp = () => {
@@ -211,7 +209,8 @@ onMounted(() => {
     console.log(store.selectedTimeOfDay, store.selectedWeather);
     core.world.environment.setTime(store.selectedTimeOfDay);
     core.world.environment.setWeather(store.selectedWeather);
-
+    core.world.character.setMode(store.selectedCharacterMode);
+    core.world.character.setSpeed(Number(store.selectedSpeed));
     // window.addEventListener('keydown', toggleToolVisibility);
 });
 

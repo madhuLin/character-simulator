@@ -72,7 +72,8 @@ export const portalPositions: [number, number, number][] = [
     [19, 0.7, -18],
     [-1.4, 0.05, 16],
     [-2.1, 0.05, 4],
-    [-2.1, 0.05, 4],
+    [0, 9.4, -92],
+
 ];
 
 
@@ -211,3 +212,9 @@ author: "小雅",
 * */
 export const IFRAME_SRC = new URL("/universe/index.html", import.meta.url).href;
 export const ON_ENTER_APP = "on-enter-app";
+
+
+
+//mode == Playground
+export const PLAYGROUND_SCENE_URL = new URL("../assets/models/trip-fellas-map-transformed.glb", import.meta.url).href;
+// export const PLAYGROUND_EFFECT_SCENE_URL = new URL("../assets/img/smoke.png", import.meta.url).href;

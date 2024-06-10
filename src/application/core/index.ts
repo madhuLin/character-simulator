@@ -95,6 +95,4 @@ export default class Core {
 			this.renderer.setPixelRatio(window.devicePixelRatio);
 		});
 	}
-
-
 }

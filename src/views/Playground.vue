@@ -218,8 +218,11 @@ onMounted(() => {
     core.emitter.$on(ON_CLICK_RAY_CAST, mouseClickHandler);
     core.emitter.$on(ON_SHOW_TOOLTIP, showToolTip);
     core.emitter.$on(ON_HIDE_TOOLTIP, c1.value?.hidePreviewTooltip);
+    // 設定初始時間、天氣、角色模式、速度、音樂
     core.world.environment.setTime(store.selectedTimeOfDay);
     core.world.environment.setWeather(store.selectedWeather);
+    core.world.character.setMode(store.selectedCharacterMode);
+    core.world.character.setSpeed(Number(store.selectedSpeed));
 });
 
 onBeforeUnmount(() => {

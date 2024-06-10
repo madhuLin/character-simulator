@@ -77,7 +77,6 @@ export class TeleporterManager {
     }
 
     clear() {
-
         for (var i = 0; i < this.teleporters.length; i++) {
             this.clearModel(this.teleporters[i])
         }

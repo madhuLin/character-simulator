@@ -75,7 +75,7 @@ export class RainScene {
 
     const particleMaterial = new THREE.PointsMaterial({
       map: this.createRaindropTexture(), // Create raindrop texture
-      size: 8, // Adjust raindrop size
+      size: 6, // Adjust raindrop size
       transparent: true, // Set as transparent
       opacity: 0.9, // Adjust raindrop opacity
     });

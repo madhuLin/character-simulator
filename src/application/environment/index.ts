@@ -28,6 +28,8 @@ import {
 import { Water } from "three/examples/jsm/objects/Water2";
 import type { BVHGeometry } from "../utils/typeAssert";
 import { isLight, isMesh } from "../utils/typeAssert";
+
+// three-mesh-bvh 是一個用於處理三維模型中的加速結構庫，特別是用於提高碰撞偵測和射線追踪的性能。
 import { MeshBVH, StaticGeometryGenerator, type MeshBVHOptions } from "three-mesh-bvh";
 import Emitter from "../emitter";
 import { SnowScene } from "./snowscene";
@@ -336,9 +338,6 @@ export default class Environment {
 				const collider = new Mesh(geometry, material);
 				door.add(collider); // 將碰撞體添加為傳送門的子物件
 				this.scene.add(door);
-				// gltf.scene.traverse(item => {
-
-				// });
 				collider.userData = {
 					hint: true,
 					map: map,
@@ -550,7 +549,6 @@ export default class Environment {
 				generate_geometry.boundsTree = new MeshBVH(generate_geometry, { lazyGeneration: false } as MeshBVHOptions);
 
 				this.colliders.push(new Mesh(generate_geometry));
-				// this.colliders.position.x += 20;
 				this.scene.add(this.collision_scene);
 
 
@@ -628,33 +626,39 @@ export default class Environment {
 	}
 
 	private _initSceneOtherEffectsMorning() {
+		// 創建一個方向光源，模擬太陽光照
 		const direction_light = new DirectionalLight(0xffffff, 1);
-		direction_light.position.set(-5, 25, -1);
-		direction_light.castShadow = true;
-		direction_light.shadow.camera.near = 0.01;
-		direction_light.shadow.camera.far = 500;
-		direction_light.shadow.camera.right = 30;
-		direction_light.shadow.camera.left = -30;
-		direction_light.shadow.camera.top = 30;
-		direction_light.shadow.camera.bottom = -30;
-		direction_light.shadow.mapSize.width = 1024;
-		direction_light.shadow.mapSize.height = 1024;
-		direction_light.shadow.radius = 2;
-		direction_light.shadow.bias = -0.00006;
-		this.scene.add(direction_light);
-
+		direction_light.position.set(-5, 25, -1); // 設置光源位置
+		direction_light.castShadow = true; // 啟用陰影投射
+		direction_light.shadow.camera.near = 0.01; // 設置陰影相機的近剪裁面
+		direction_light.shadow.camera.far = 500; // 設置陰影相機的遠剪裁面
+		direction_light.shadow.camera.right = 30; // 設置陰影相機的右邊界
+		direction_light.shadow.camera.left = -30; // 設置陰影相機的左邊界
+		direction_light.shadow.camera.top = 30; // 設置陰影相機的上邊界
+		direction_light.shadow.camera.bottom = -30; // 設置陰影相機的下邊界
+		direction_light.shadow.mapSize.width = 1024; // 設置陰影貼圖的寬度
+		direction_light.shadow.mapSize.height = 1024; // 設置陰影貼圖的高度
+		direction_light.shadow.radius = 2; // 設置陰影的模糊半徑
+		direction_light.shadow.bias = -0.00006; // 設置陰影偏移，防止陰影伪影
+		this.scene.add(direction_light); // 將方向光源添加到場景中
+	
+		// 創建一個半球光源，模擬環境光照
 		const fill_light = new HemisphereLight(0xffffff, 0xe49959, 1);
-		fill_light.position.set(2, 1, 1);
-		this.scene.add(fill_light);
-
+		fill_light.position.set(2, 1, 1); // 設置光源位置
+		this.scene.add(fill_light); // 將半球光源添加到場景中
+	
+		// 創建一個環境光源，增加整體光照亮度
 		this.scene.add(new AmbientLight(0xffffff, 1));
-
+	
+		// 設置場景的霧效，模擬遠處的霧氣
 		this.scene.fog = new Fog(0xcccccc, 10, 900);
-
+	
+		// 加載並設置場景背景材質
 		const texture = this.loader.texture_loader.load(SCENE_BACKGROUND_TEXTURE);
-		texture.mapping = EquirectangularReflectionMapping;
-		this.scene.background = texture;
+		texture.mapping = EquirectangularReflectionMapping; // 設置材質映射方式為等距柱狀反射映射
+		this.scene.background = texture; // 設置場景的背景材質
 	}
+	
 
 	private _initSceneOtherEffectsSunset() {
 		// 修改主光源，使其顏色和強度模擬夕陽
@@ -805,7 +809,7 @@ export default class Environment {
 		// 	}
 		// }
 
-		if (this.mode === "Entertainment") {
+		if (this.mode !== "Plaza") {
 			if (this.teleporterManager) {
 				this.teleporterManager.updateCircles();
 				this.teleporterManager.updateArounds();

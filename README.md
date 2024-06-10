@@ -3,7 +3,7 @@
 <p align="center">
 <img src="src/assets/cover.png" alt="" />
 <img src="src/assets/plaza.png" alt="" />
-<img src="src/assets/gallery.png" alt="" />
+<img src="src/assets/grallery.png" alt="" />
 <img src="src/assets/playground.png" alt="" />
 
 </p>
@@ -45,18 +45,18 @@
 
 ## 目錄結構說明
 ```text
-├── src # 原始碼
-│ ├── application # 遊戲核心原始碼部分
-| | │── audio # 音訊類別（建立位置音訊）
-| | │── character # 人物角色類別（人物模型控制）
-| | │── control # 鍵盤控制類別（鍵盤按鍵狀態管理）
-| | │── core # 核心基礎類別（包括camera、renderer、scene等）
-| | │── emitter # 事件分發類別（各類事件的分發）
-| | │── environment # 場景類別（建立地圖模型、燈光、場景貼圖）
-| | | │── index.ts # 場景管理類別 plaze、gallery、entertainment、platground
-| | │ |── rainscene.ts # 下雨場景類別
-| | │ |── snowscene.ts # 雪場景類別
-| | │ └── teleoirter.ts #傳送門類別
+|── src # 原始碼
+| |── application # 遊戲核心原始碼部分
+| | |── audio # 音訊類別（建立位置音訊）
+| | |── character # 人物角色類別（人物模型控制）
+| | |── control # 鍵盤控制類別（鍵盤按鍵狀態管理）
+| | |── core # 核心基礎類別（包括camera、renderer、scene等）
+| | |── emitter # 事件分發類別（各類事件的分發）
+| | |── environment # 場景類別（建立地圖模型、燈光、場景貼圖）
+| | | |── index.ts # 場景管理類別 plaze、gallery、entertainment、platground
+| | | |── rainscene.ts # 下雨場景類別
+| | | |── snowscene.ts # 雪場景類別
+| | | └── teleoirter.ts #傳送門類別
 | | │── interactionDetection # 互動偵測類別（角色盒子與互動盒子相交的觸發偵測）
 | | │── lib
 | | | └── Reflector.ts # 反射器類別（角色與互動盒子的反射偵測）、美術館地面
@@ -76,15 +76,15 @@
 | | ├── shaders # 傳送門shader文件
 | | ├── vue # 前端圖片文件
 | | └── main.css # 全域樣式
-│ ├── components # vue組件
+| |── components # vue組件
 | | │── BoardsInfo.vue # 美術館畫框組件
 | | │── LoadProgress.vue # 載入元件
 | | │── NesGameDialog.vue # nes遊戲彈跳窗組件（運行nes遊戲）
 | | │── NotifyTips.vue # 互動提示元件
 | | │── PreviewTooltips.vue # 雷射提示組件
 | | └── Tool.vue # 工具組件（時間、天氣、角色模式、角色、音樂等控制）
-│ ├── router # 路由管理
-| ├── views # 頁面管理
+│ |── router # 路由管理
+| |── views # 頁面管理
 | | ├── Entertainment.vue # 娛樂頁面
 | | ├── Grallery.vue # 美術館頁面
 | | ├── Platground.vue # 遊樂場頁面

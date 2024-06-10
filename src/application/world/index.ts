@@ -9,7 +9,7 @@ import Loader from "../loader";
 import Emitter from "../emitter";
 import { PointerLockControls } from "three-stdlib";
 import RayCasterControls from "../rayCasterControls";
-import {portalPositions} from "../Constants";
+import { portalPositions } from "../Constants";
 
 interface WorldParams {
 	scene: Scene;
@@ -29,7 +29,7 @@ export default class World {
 	private readonly loader: Loader;
 	private readonly emitter: Emitter;
 	private readonly mode: string;
-	
+
 	ray_caster_controls: RayCasterControls;
 	environment: Environment;
 	character: Character;
@@ -53,10 +53,10 @@ export default class World {
 		this.emitter = emitter;
 		this.mode = mode;
 		let portalPosition: Vector3 | undefined;
-		if(mode === "Plaza") portalPosition = new Vector3(...portalPositions[0]);
+		if (mode === "Plaza") portalPosition = new Vector3(...portalPositions[0]);
 		else if (mode === "Entertainment") portalPosition = new Vector3(...portalPositions[1]);
-		else if(mode === "Grallery") portalPosition = new Vector3(...portalPositions[2]);
-		else if(mode === "Playground") portalPosition = new Vector3(...portalPositions[3]);
+		else if (mode === "Grallery") portalPosition = new Vector3(...portalPositions[2]);
+		else if (mode === "Playground") portalPosition = new Vector3(...portalPositions[3]);
 		this.environment = new Environment({
 			scene: this.scene,
 			loader: this.loader,
@@ -64,7 +64,7 @@ export default class World {
 			mode: this.mode,
 			portalPosition: portalPosition!
 		});
-		
+
 		this.character = new Character({
 			scene: this.scene,
 			camera: this.camera,
@@ -93,21 +93,21 @@ export default class World {
 			emitter: this.emitter
 		});
 
-		
-		
+
+
 	}
 
 	update(delta: number) {
-		// 需等待场景加载完毕后更新character，避免初始加载时多余的性能消耗和人物碰撞错误处理
+		// 需等待場景載入完畢後更新character，避免初始載入時多餘的效能消耗和人物碰撞錯誤處理
 		if (this.environment.is_load_finished && this.environment.colliders) {
-			//@ts-ignore
+			// @ts-ignore
 			this.character.update(delta, this.environment.colliders as Mesh[]);
 			this.ray_caster_controls.updateTooltipRayCast(this.environment.raycast_objects);
 			this.ray_caster_controls.updateTooltipRayCast(this.environment.raycast_objects);
 			this.environment.update(delta);
 		}
 
-		// 需等待场景及人物加载完毕后更新交互探测，避免初始加载时多余的性能消耗
+		// 需等待場景及人物載入完畢後更新互動探測，避免初始載入時多餘的效能消耗
 		if (this.mode === "Entertainment" && this.environment.is_load_finished && this.character.character_shape) {
 			this.interaction_detection.update(this.character.character_shape);
 		}

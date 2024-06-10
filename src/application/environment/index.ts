@@ -587,43 +587,49 @@ export default class Environment {
 
 
 	/*
-	* 创建环境灯光、场景贴图、场景雾
+	* 晚上
 	* */
 	private _initSceneOtherEffectsNight() {
+		// 加載夜間場景的效果材質
 		this.loader.texture_loader.load(PLAZA_EFFECT_SCENE_URL, (texture) => {
+			// 創建雲層的幾何體和材質
 			const cloudGeo = new PlaneGeometry(500, 500);
 			const cloudMaterial = new MeshLambertMaterial({
 				map: texture,
 				transparent: true
 			});
-
+			// 生成25個雲層並隨機放置在場景中
 			for (let p = 0; p < 25; p++) {
 				const cloud = new Mesh(cloudGeo, cloudMaterial);
 				cloud.position.set(
-					Math.random() * 800 - 400,
-					500,
-					Math.random() * 500 - 450
+					Math.random() * 800 - 400, // 隨機X位置
+					500, // 固定Y位置
+					Math.random() * 500 - 450 // 隨機Z位置
 				);
 				cloud.rotation.x = 1.16;
 				cloud.rotation.y = -0.12;
-				cloud.rotation.z = Math.random() * 360;
-				cloud.material.opacity = 0.6;
+				cloud.rotation.z = Math.random() * 360; // 隨機旋轉
+				cloud.material.opacity = 0.6; // 設置雲層透明度
 				this.cloudParticles.push(cloud);
-				this.scene.add(cloud);
+				this.scene.add(cloud); // 將雲層添加到場景中
 			}
-
+	
+			// 添加環境光源，增加整體光照亮度
 			const ambient = new AmbientLight(0x555555);
 			this.scene.add(ambient);
-
+	
+			// 添加方向光源，模擬月光效果
 			const directionalLight = new DirectionalLight(0xffeedd);
-			directionalLight.position.set(0, 0, 1);
+			directionalLight.position.set(0, 0, 1); // 設置光源位置
 			this.scene.add(directionalLight);
-
-			const flash = new PointLight(0x062d89, 30, 500, 1.7);
-			flash.position.set(200, 300, 100);
+	
+			// 添加點光源，模擬閃電效果
+			const flash = new PointLight(0x062d89, 30, 500, 3);
+			flash.position.set(200, 300, 100); // 設置光源位置
 			this.scene.add(flash);
 		});
 	}
+	
 
 	private _initSceneOtherEffectsMorning() {
 		// 創建一個方向光源，模擬太陽光照

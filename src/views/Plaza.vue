@@ -175,7 +175,7 @@ const onLoadProgress = ([{ url, loaded, total }]: [{ url: string, loaded: number
 // 跳轉場景
 const onJumpScene = (map: string) => {
     if(map[0] === "Entertainment") router.push("/entertainment");
-    else if(map[0] === "Grallery") router.push("/gallery");
+    else if(map[0] === "Grallery") router.push("/grallery");
     else if(map[0] === "Playground") router.push("/playground");
 };
 

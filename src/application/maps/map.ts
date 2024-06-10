@@ -42,14 +42,18 @@ class MapNode {
 
   update() {
     try {
-      if (this.node.userData.obstacle === "swing") {
+      //搖擺 
+      if (this.node.userData.obstacle === "swing") { 
         const now = performance.now();
         this.body!.rotation.z = Math.sin((now + this.rand * 2000) / 1000);
       }
+      //滑動
       else if (this.node.userData.obstacle === "slider") {
         const now = performance.now();
+        //rand 提供相位偏移量，避免所有節點同步運動
         this.body!.position.x = Math.sin((now + this.rand * 800) / 700) * 6;
       }
+      //旋轉
       else if (this.node.userData.obstacle === "revolver") {
         this.body!.rotation.y += 0.02; // 添加自動旋轉邏輯，這裡可以調整旋轉速度
       }

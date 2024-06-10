@@ -335,8 +335,6 @@ export default class Character {
 			}
 		}
 
-
-
 		this.character.position.addScaledVector(this.velocity, delta_time);
 
 		this.updateDirection();
